@@ -179,7 +179,7 @@ private fun ProfileEditContent(
                 OutlinedTextField(
                     value = uiState.flashPassword,
                     onValueChange = onFlashPasswordChanged,
-                    label = { Text("Flash пароль (необязательно)") },
+                    label = { Text("Flash пароль (дополнительная защита)") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     visualTransformation = if (showPasswords) VisualTransformation.None else PasswordVisualTransformation()

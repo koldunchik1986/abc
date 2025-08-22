@@ -13,7 +13,7 @@ data class UserProfile(
     val id: String = "",
     val userNick: String = "",
     val userPassword: String = "",
-    val userPasswordFlash: String = "", // Flash-пароль (может быть пустым)
+    val userPasswordFlash: String = "", // Flash-пароль (вторая степень защиты, может быть пустым)
     val userKey: String = "", // Ключ пользователя для дополнительной аутентификации
     val userAutoLogon: Boolean = false,
     
@@ -43,7 +43,7 @@ data class UserProfile(
     val mapDrawRegion: Boolean = true,
     
     // Настройки лечения
-    val cureNV: List<String> = listOf("", "", "", ""),
+    val cureNV: List<Int> = listOf(0, 0, 0, 0), // Changed from List<String> to List<Int>
     val cureAsk: List<Boolean> = listOf(false, false, false, false),
     val cureAdvanced: Boolean = false,
     val cureAfter: Boolean = false,
@@ -56,17 +56,17 @@ data class UserProfile(
     val autoAnswer: String = "",
     
     // Настройки рыбалки
-    val fishTiedHigh: Boolean = false,
+    val fishTiedHigh: Int = 60, // Changed from Boolean to Int
     val fishTiedZero: Boolean = false,
     val fishStopOverWeight: Boolean = false,
     val fishAutoWear: Boolean = false,
     val fishHandOne: String = "",
     val fishHandTwo: String = "",
     val fishEnabledPrims: Boolean = false,
-    val fishUm: Boolean = false,
+    val fishUm: Int = 0, // Changed from Boolean to Int
     val fishMaxLevelBots: Int = 0,
     val fishChatReport: Boolean = false,
-    val fishChatReportColor: String = "",
+    val fishChatReportColor: Boolean = false, // Changed from String to Boolean
     val fishAuto: Boolean = false,
     
     // Настройки разделки
@@ -80,13 +80,15 @@ data class UserProfile(
     val chatHeight: Int = 200,
     val chatDelay: Int = 500,
     val chatMode: String = "normal",
+    val doChatLevels: Boolean = false,
     
     // Настройки форума
     val lightForum: Boolean = false,
     
     // Настройки торговли
     val torgActive: Boolean = false,
-    val torgTabl: Boolean = false,
+    val torgTabl: String = "", // Changed from Boolean to String
+    val torgTable: String = "", // Table for trading calculations
     val torgMessageTooExp: String = "",
     val torgMessageAdv: String = "",
     val torgAdvTime: Int = 600,
@@ -95,7 +97,7 @@ data class UserProfile(
     val torgMessageLess90: String = "",
     val torgSliv: Boolean = false,
     val torgMinLevel: Int = 1,
-    val torgEx: Boolean = false,
+    val torgEx: String = "", // Changed from Boolean to String
     val torgDeny: String = "",
     
     // Настройки окна
@@ -160,6 +162,13 @@ data class UserProfile(
     val doShowFastAttackFog: Boolean = true,
     val doShowFastAttackZas: Boolean = true,
     val doShowFastAttackTotem: Boolean = true,
+    
+    // Дополнительные поля для PostFilter
+    var currentHp: Double = 0.0,
+    var currentMp: Double = 0.0,
+    var lastChatMessage: String = "",
+    val tabs: List<String> = emptyList(),
+    val favLocations: List<String> = emptyList(),
     
     // Метаданные
     val configLastSaved: Long = System.currentTimeMillis(),

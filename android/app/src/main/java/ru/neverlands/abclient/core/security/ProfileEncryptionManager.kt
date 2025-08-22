@@ -58,6 +58,7 @@ class ProfileEncryptionManager @Inject constructor(
                     ""
                 }
                 
+                // Шифруем Flash пароль отдельно дль второй степени защиты
                 val encryptedFlashPassword = if (profile.userPasswordFlash.isNotEmpty()) {
                     Base64.getEncoder().encodeToString(
                         cipher.doFinal(profile.userPasswordFlash.toByteArray())
@@ -68,7 +69,7 @@ class ProfileEncryptionManager @Inject constructor(
                 
                 profile.copy(
                     userPassword = "",
-                    userPasswordFlash = "",
+                    userPasswordFlash = encryptedFlashPassword, // Храним зашифрованный Flash пароль
                     configPassword = encryptedPassword,
                     isEncrypted = true,
                     configHash = generatePasswordHash(password)
@@ -100,9 +101,17 @@ class ProfileEncryptionManager @Inject constructor(
                     ""
                 }
                 
+                // Расшифровываем Flash пароль если он зашифрован
                 val decryptedFlashPassword = if (profile.userPasswordFlash.isNotEmpty()) {
-                    // Flash password is stored as plain text in this implementation
-                    profile.userPasswordFlash
+                    try {
+                        // Проверяем, что это Base64 (зашифрованный)
+                        Base64.getDecoder().decode(profile.userPasswordFlash)
+                        // Если не выбросило исключение, то это зашифрованный пароль
+                        String(cipher.doFinal(Base64.getDecoder().decode(profile.userPasswordFlash)))
+                    } catch (e: Exception) {
+                        // Если не удалось расшифровать, считаем что это обычный текст
+                        profile.userPasswordFlash
+                    }
                 } else {
                     ""
                 }

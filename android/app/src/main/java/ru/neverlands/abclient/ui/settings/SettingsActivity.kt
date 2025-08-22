@@ -9,18 +9,23 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
+import ru.neverlands.abclient.ui.settings.sections.*
 import ru.neverlands.abclient.ui.theme.ABClientTheme
 
 /**
- * Activity для настроек приложения
- * Эквивалент FormSettings из Windows версии
+ * Экран настроек - полный аналог FormSettingsGeneral из Windows версии
+ * Содержит все категории настроек как в оригинальном приложении
  */
 @AndroidEntryPoint
 class SettingsActivity : ComponentActivity() {
@@ -51,9 +56,12 @@ class SettingsActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SettingsScreen(
-    onBack: () -> Unit
+fun SettingsScreen(
+    onBack: () -> Unit,
+    viewModel: SettingsViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -61,6 +69,11 @@ private fun SettingsScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { viewModel.saveSettings() }) {
+                        Icon(Icons.Default.Save, contentDescription = "Сохранить")
                     }
                 }
             )
@@ -70,161 +83,132 @@ private fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Настройки подключения
-            SettingsSection(title = "Подключение") {
-                SettingsSwitch(
-                    title = "Автоматическое переподключение",
-                    subtitle = "Переподключаться при обрыве соединения",
-                    checked = true,
-                    onCheckedChange = { /* TODO */ }
-                )
-                
-                SettingsSwitch(
-                    title = "Использовать прокси",
-                    subtitle = "Подключение через прокси сервер",
-                    checked = false,
-                    onCheckedChange = { /* TODO */ }
-                )
-            }
+            // Общие настройки
+            GeneralSettingsSection(
+                uiState = uiState,
+                onPromptExitChanged = viewModel::setPromptExit,
+                onTrayChanged = viewModel::setUseTray,
+                onTrayBalloonsChanged = viewModel::setShowTrayBalloons
+            )
             
-            // Настройки игры
-            SettingsSection(title = "Игра") {
-                SettingsSwitch(
-                    title = "Автоматическое обновление",
-                    subtitle = "Обновлять страницу игры автоматически",
-                    checked = true,
-                    onCheckedChange = { /* TODO */ }
-                )
-                
-                SettingsSwitch(
-                    title = "Звуковые уведомления",
-                    subtitle = "Воспроизводить звуки игровых событий",
-                    checked = false,
-                    onCheckedChange = { /* TODO */ }
-                )
-            }
+            // Настройки чата
+            ChatSettingsSection(
+                uiState = uiState,
+                onKeepMovingChanged = viewModel::setChatKeepMoving,
+                onKeepGameChanged = viewModel::setChatKeepGame,
+                onKeepLogChanged = viewModel::setChatKeepLog,
+                onChatSizeChanged = viewModel::setChatSize,
+                onChatLevelsChanged = viewModel::setChatLevels
+            )
             
-            // Настройки интерфейса
-            SettingsSection(title = "Интерфейс") {
-                SettingsSwitch(
-                    title = "Темная тема",
-                    subtitle = "Использовать темное оформление",
-                    checked = false,
-                    onCheckedChange = { /* TODO */ }
-                )
-                
-                SettingsSwitch(
-                    title = "Показывать статус онлайн",
-                    subtitle = "Отображать индикатор подключения",
-                    checked = true,
-                    onCheckedChange = { /* TODO */ }
-                )
-            }
+            // Настройки карты
+            MapSettingsSection(
+                uiState = uiState,
+                onExtendedMapChanged = viewModel::setMapExtended,
+                onBigMapWidthChanged = viewModel::setBigMapWidth,
+                onBigMapHeightChanged = viewModel::setBigMapHeight,
+                onBigMapScaleChanged = viewModel::setBigMapScale,
+                onBigMapTransparencyChanged = viewModel::setBigMapTransparency,
+                onBackColorWhiteChanged = viewModel::setMapBackColorWhite,
+                onDrawRegionChanged = viewModel::setMapDrawRegion,
+                onShowMiniMapChanged = viewModel::setShowMiniMap,
+                onMiniMapWidthChanged = viewModel::setMiniMapWidth,
+                onMiniMapHeightChanged = viewModel::setMiniMapHeight,
+                onMiniMapScaleChanged = viewModel::setMiniMapScale
+            )
             
-            // Настройки безопасности
-            SettingsSection(title = "Безопасность") {
-                SettingsSwitch(
-                    title = "Шифрование данных",
-                    subtitle = "Шифровать сохраненные пароли",
-                    checked = true,
-                    onCheckedChange = { /* TODO */ }
-                )
-                
-                SettingsSwitch(
-                    title = "Эмуляция браузера",
-                    subtitle = "Расширенная эмуляция для обхода защит",
-                    checked = true,
-                    onCheckedChange = { /* TODO */ }
-                )
-            }
+            // Настройки рыбалки
+            FishingSettingsSection(
+                uiState = uiState,
+                onFishTiedHighChanged = viewModel::setFishTiedHigh,
+                onFishTiedZeroChanged = viewModel::setFishTiedZero,
+                onStopOverWeightChanged = viewModel::setStopOverWeight,
+                onAutoWearChanged = viewModel::setFishAutoWear,
+                onHandOneChanged = viewModel::setFishHandOne,
+                onHandTwoChanged = viewModel::setFishHandTwo,
+                onChatReportChanged = viewModel::setFishChatReport,
+                onChatReportColorChanged = viewModel::setFishChatReportColor
+            )
             
-            Spacer(modifier = Modifier.height(16.dp))
+            // Настройки звука
+            SoundSettingsSection(
+                uiState = uiState,
+                onSoundEnabledChanged = viewModel::setSoundEnabled,
+                onPlayDigitsChanged = viewModel::setPlayDigits,
+                onPlayAttackChanged = viewModel::setPlayAttack,
+                onPlaySndMsgChanged = viewModel::setPlaySndMsg,
+                onPlayRefreshChanged = viewModel::setPlayRefresh,
+                onPlayAlarmChanged = viewModel::setPlayAlarm,
+                onPlayTimerChanged = viewModel::setPlayTimer
+            )
             
-            // Информация о приложении
-            Card(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = "О приложении",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "ABClient для Android",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Text(
-                        text = "Версия 1.0.0",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun SettingsSection(
-    title: String,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    Column {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
-        
-        Card(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                content = content
+            // Настройки лечения
+            CureSettingsSection(
+                uiState = uiState,
+                onCureNV1Changed = { viewModel.setCureNV(0, it) },
+                onCureNV2Changed = { viewModel.setCureNV(1, it) },
+                onCureNV3Changed = { viewModel.setCureNV(2, it) },
+                onCureNV4Changed = { viewModel.setCureNV(3, it) },
+                onCureEnabled1Changed = { viewModel.setCureEnabled(0, it) },
+                onCureEnabled2Changed = { viewModel.setCureEnabled(1, it) },
+                onCureEnabled3Changed = { viewModel.setCureEnabled(2, it) },
+                onCureEnabled4Changed = { viewModel.setCureEnabled(3, it) },
+                onCureDisabledLowLevelsChanged = viewModel::setCureDisabledLowLevels
+            )
+            
+            // Настройки автоответчика
+            AutoAnswerSettingsSection(
+                uiState = uiState,
+                onAutoAnswerChanged = viewModel::setAutoAnswer,
+                onAutoAnswerTextChanged = viewModel::setAutoAnswerText
+            )
+            
+            // Настройки торговли
+            TradingSettingsSection(
+                uiState = uiState,
+                onTorgTableChanged = viewModel::setTorgTable,
+                onTorgMessageAdvChanged = viewModel::setTorgMessageAdv,
+                onTorgAdvTimeChanged = viewModel::setTorgAdvTime,
+                onTorgMessageNoMoneyChanged = viewModel::setTorgMessageNoMoney,
+                onTorgMessageTooExpChanged = viewModel::setTorgMessageTooExp,
+                onTorgMessageThanksChanged = viewModel::setTorgMessageThanks,
+                onTorgMessageLess90Changed = viewModel::setTorgMessageLess90,
+                onTorgSlivChanged = viewModel::setTorgSliv,
+                onTorgMinLevelChanged = viewModel::setTorgMinLevel,
+                onTorgExChanged = viewModel::setTorgEx,
+                onTorgDenyChanged = viewModel::setTorgDeny
+            )
+            
+            // Настройки инвентаря
+            InventorySettingsSection(
+                uiState = uiState,
+                onInvPackChanged = viewModel::setInvPack,
+                onInvPackDolgChanged = viewModel::setInvPackDolg,
+                onInvSortChanged = viewModel::setInvSort
+            )
+            
+            // Настройки быстрой атаки
+            FastAttackSettingsSection(
+                uiState = uiState,
+                onShowFastAttackChanged = viewModel::setShowFastAttack,
+                onShowBloodChanged = viewModel::setShowFastAttackBlood,
+                onShowUltimateChanged = viewModel::setShowFastAttackUltimate,
+                onShowClosedUltimateChanged = viewModel::setShowFastAttackClosedUltimate,
+                onShowClosedChanged = viewModel::setShowFastAttackClosed,
+                onShowFistChanged = viewModel::setShowFastAttackFist,
+                onShowClosedFistChanged = viewModel::setShowFastAttackClosedFist,
+                onShowOpenNevidChanged = viewModel::setShowFastAttackOpenNevid,
+                onShowPoisonChanged = viewModel::setShowFastAttackPoison,
+                onShowStrongChanged = viewModel::setShowFastAttackStrong,
+                onShowNevidChanged = viewModel::setShowFastAttackNevid,
+                onShowFogChanged = viewModel::setShowFastAttackFog,
+                onShowZasChanged = viewModel::setShowFastAttackZas,
+                onShowTotemChanged = viewModel::setShowFastAttackTotem
             )
         }
-    }
-}
-
-@Composable
-private fun SettingsSwitch(
-    title: String,
-    subtitle: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange
-        )
     }
 }

@@ -152,11 +152,13 @@ class ProfileEditViewModel @Inject constructor(
     }
     
     /**
-     * Устанавливает Flash пароль
+     * Устанавливает Flash пароль (дополнительная защита)
      */
     fun setFlashPassword(flashPassword: String) {
         _uiState.value = _uiState.value.copy(flashPassword = flashPassword)
     }
+    
+
     
     /**
      * Устанавливает ключ пользователя

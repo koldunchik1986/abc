@@ -65,6 +65,48 @@
             android:parentActivityName=".ui.main.MainActivity"
             android:configChanges="orientation|screenSize|keyboardHidden" />
 
+        <!-- Profiles Management Activity -->
+        <activity
+            android:name=".ui.profiles.ProfilesActivity"
+            android:theme="@style/Theme.ABClient"
+            android:parentActivityName=".ui.main.MainActivity" />
+
+        <!-- Navigator Activity -->
+        <activity
+            android:name=".ui.navigator.NavigatorActivity"
+            android:theme="@style/Theme.ABClient"
+            android:parentActivityName=".ui.main.MainActivity" />
+
+        <!-- Fish Advisor Activity -->
+        <activity
+            android:name=".ui.fishadvisor.FishAdvisorActivity"
+            android:theme="@style/Theme.ABClient"
+            android:parentActivityName=".ui.main.MainActivity" />
+
+        <!-- Inventory Activity -->
+        <activity
+            android:name=".ui.inventory.InventoryActivity"
+            android:theme="@style/Theme.ABClient"
+            android:parentActivityName=".ui.main.MainActivity" />
+
+        <!-- Tab Manager Activity -->
+        <activity
+            android:name=".ui.tabmanager.TabManagerActivity"
+            android:theme="@style/Theme.ABClient"
+            android:parentActivityName=".ui.main.MainActivity" />
+
+        <!-- Timer Manager Activity -->
+        <activity
+            android:name=".ui.timer.TimerManagerActivity"
+            android:theme="@style/Theme.ABClient"
+            android:parentActivityName=".ui.main.MainActivity" />
+
+        <!-- Trading Activity -->
+        <activity
+            android:name=".ui.trading.TradingActivity"
+            android:theme="@style/Theme.ABClient"
+            android:parentActivityName=".ui.main.MainActivity" />
+
         <!-- Background Service для поддержания онлайн статуса -->
         <service
             android:name=".service.OnlineStatusService"

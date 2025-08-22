@@ -9,6 +9,22 @@ plugins {
 android {
     namespace = "ru.neverlands.abclient"
     compileSdk = 34
+    
+    // Полное отключение JDK image transformation для Oracle JDK 17
+    configurations.all {
+        resolutionStrategy {
+            eachDependency {
+                // Блокируем любые попытки использования JDK image
+                if (requested.name.contains("core-for-system-modules")) {
+                    useTarget("${requested.group}:${requested.name}:${requested.version}")
+                    because("Отключение JDK image для совместимости с Oracle JDK 17")
+                }
+            }
+        }
+        // Исключаем проблемные компоненты
+        exclude(group = "com.android.tools", module = "sdk-common")
+        exclude(group = "com.android.tools.build", module = "gradle")
+    }
 
     defaultConfig {
         applicationId = "ru.neverlands.abclient"
@@ -40,18 +56,27 @@ android {
         }
         release {
             isMinifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro", "r8-rules.pro")
             signingConfig = signingConfigs.getByName("release")
+            
+            // R8 оптимизации
+            isDebuggable = false
+            isJniDebuggable = false
+            isPseudoLocalesEnabled = false
         }
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        
+        // Отключаем JDK image для совместимости с Oracle JDK 17
+        isCoreLibraryDesugaringEnabled = false
     }
 
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
 
     buildFeatures {
@@ -131,6 +156,9 @@ dependencies {
     // Tabs
     implementation("com.google.accompanist:accompanist-pager:0.32.0")
     implementation("com.google.accompanist:accompanist-pager-indicators:0.32.0")
+    
+    // Image Loading
+    implementation("io.coil-kt:coil-compose:2.5.0")
     
     // Testing
     testImplementation("junit:junit:4.13.2")

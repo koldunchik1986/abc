@@ -279,6 +279,7 @@ class UserPreferencesManager @Inject constructor(
      * Сохраняет зашифрованные данные профиля
      */
     private fun saveEncryptedData(profile: UserProfile) {
+        // Сохраняем пароли и Flash пароль для дополнительной защиты
         if (profile.userPassword.isNotBlank() || profile.userPasswordFlash.isNotBlank()) {
             val passwordData = mapOf(
                 "password" to profile.userPassword,

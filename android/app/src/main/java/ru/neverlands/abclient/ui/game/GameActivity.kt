@@ -22,6 +22,7 @@ import ru.neverlands.abclient.core.browser.BrowserEmulationManager
 import ru.neverlands.abclient.data.preferences.UserPreferencesManager
 import ru.neverlands.abclient.data.model.UserProfile
 import ru.neverlands.abclient.ui.theme.ABClientTheme
+import ru.neverlands.abclient.ui.game.components.AutoLoginDialog
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
@@ -81,20 +82,36 @@ private fun GameScreen(
     var currentProfile by remember { mutableStateOf<UserProfile?>(null) }
     var showProfileWarning by remember { mutableStateOf(false) }
     var autoLoginStatus by remember { mutableStateOf("") }
+    var showAutoLoginDialog by remember { mutableStateOf(false) }
+    var autoLoginConfirmed by remember { mutableStateOf(false) }
     
     val coroutineScope = rememberCoroutineScope()
     
-    // Загружаем текущий профиль
+    // Загружаем текущий профиль и проверяем автовход (аналог ConfigSelector.cs)
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             try {
                 currentProfile = preferencesManager.getCurrentProfile()
-                if (currentProfile?.isLoginDataComplete() != true) {
-                    showProfileWarning = true
+                
+                // Проверяем условия для автовхода (аналог ConfigSelector.cs)
+                if (currentProfile?.let { profile ->
+                    profile.userAutoLogon && 
+                    profile.userNick.isNotBlank() && 
+                    profile.userPassword.isNotBlank()
+                } == true) {
+                    // Показываем диалог автовхода (аналог FormAutoLogon)
+                    showAutoLoginDialog = true
+                } else {
+                    if (currentProfile?.isLoginDataComplete() != true) {
+                        showProfileWarning = true
+                    }
+                    // Если автовход отключен, загружаем игру сразу
+                    autoLoginConfirmed = true
                 }
             } catch (e: Exception) {
                 // Логируем ошибку, но продолжаем работу без профиля
                 showProfileWarning = true
+                autoLoginConfirmed = true
             }
         }
     }
@@ -249,41 +266,79 @@ private fun GameScreen(
                 }
             }
             
-            // WebView
-            AndroidView(
-                modifier = Modifier.fillMaxSize(),
-                factory = { context ->
-                    WebView(context).apply {
-                        webView = this
-                        
-                        // Настройка WebView для эмуляции браузера
-                        browserEmulationManager.configureWebView(this)
-                        
-                        // Используем GameWebViewClient с текущим профилем
-                        webViewClient = GameWebViewClient(
-                            currentProfile = currentProfile,
-                            onPageStarted = { url ->
-                                isLoading = true
-                                currentUrl = url
-                            },
-                            onPageFinished = { url ->
-                                isLoading = false
-                                currentUrl = url
-                            },
-                            onLoadingStateChanged = { loading ->
-                                isLoading = loading
-                            },
-                            onAutoLoginStatus = { status ->
-                                autoLoginStatus = status
-                            }
+            // WebView - создаем только после подтверждения автовхода
+            if (autoLoginConfirmed) {
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = { context ->
+                        WebView(context).apply {
+                            webView = this
+                            
+                            // Настройка WebView для эмуляции браузера
+                            browserEmulationManager.configureWebView(this)
+                            
+                            // Используем GameWebViewClient с текущим профилем
+                            val profile = currentProfile
+                            webViewClient = GameWebViewClient(
+                                currentProfile = profile,
+                                onPageStarted = { url ->
+                                    isLoading = true
+                                    currentUrl = url
+                                },
+                                onPageFinished = { url ->
+                                    isLoading = false
+                                    currentUrl = url
+                                },
+                                onLoadingStateChanged = { loading ->
+                                    isLoading = loading
+                                },
+                                onAutoLoginStatus = { status ->
+                                    autoLoginStatus = status
+                                }
+                            )
+                            
+                            // Загружаем игровой сайт
+                            loadUrl(GameActivity.GAME_URL)
+                        }
+                    }
+                )
+            } else {
+                // Показываем сообщение о жидании подтверждения автовхода
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CircularProgressIndicator()
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Подготовка к запуску игры...",
+                            style = MaterialTheme.typography.bodyLarge
                         )
-                        
-                        // Загружаем игровой сайт
-                        loadUrl(GameActivity.GAME_URL)
                     }
                 }
-            )
+            }
         }
+    }
+    
+    // Диалог автовхода (аналог FormAutoLogon)
+    val profileSnapshot = currentProfile
+    if (showAutoLoginDialog && profileSnapshot != null) {
+        AutoLoginDialog(
+            userName = profileSnapshot.getDisplayName(),
+            onConfirm = {
+                showAutoLoginDialog = false
+                autoLoginConfirmed = true
+            },
+            onCancel = {
+                showAutoLoginDialog = false
+                autoLoginConfirmed = true // Все равно загружаем игру, но без автовхода
+                // Временно отключаем автовход для этой сессии
+                currentProfile = profileSnapshot.copy(userAutoLogon = false)
+            }
+        )
     }
 }
 

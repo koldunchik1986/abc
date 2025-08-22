@@ -34,16 +34,15 @@ class GameWebViewClient(
         private const val AUTH_FORM_SELECTOR = "form[id='auth_form'], form[action*='game.php']"
         private const val NICK_INPUT_SELECTOR = "input[name='player_nick']"
         private const val PASSWORD_INPUT_SELECTOR = "input[name='player_password']"
-        private const val FLASH_PASSWORD_INPUT_SELECTOR = "input[name='flcheck']"
         
-        // Flash game detection
-        private const val FLASH_VARS_PATTERN = "flashvars=\"plid="
+        // HTML5 game detection
+        private const val CANVAS_GAME_PATTERN = "canvas"
+        private const val HTML5_GAME_PATTERN = "game"
         
         // JavaScript injection delay
         private const val INJECTION_DELAY_MS = 500L
     }
     
-    private var isWaitingForFlash = false
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
     
     override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
@@ -80,7 +79,7 @@ class GameWebViewClient(
                 handleLoginPage(webView, url)
             }
             
-            // Страница game.php - обрабатываем flash пароль или игровой контент
+            // Страница game.php - обрабатываем HTML5 игровой контент
             url.contains(GAME_PHP_PATTERN) -> {
                 handleGamePage(webView, url)
             }
@@ -96,6 +95,13 @@ class GameWebViewClient(
         if (currentProfile?.isLoginDataComplete() != true) {
             Log.w(TAG, "Profile data incomplete, skipping auto-login")
             onAutoLoginStatus("Профиль не настроен")
+            return
+        }
+        
+        // Проверяем, что у профиля включен автовход (аналог ConfigSelector.cs)
+        if (!currentProfile.userAutoLogon) {
+            Log.i(TAG, "Auto-login disabled for this profile")
+            onAutoLoginStatus("Автовход отключен")
             return
         }
         
@@ -194,105 +200,126 @@ class GameWebViewClient(
             null
         )
         
-        isWaitingForFlash = true
         onAutoLoginStatus("Вход выполняется...")
         Log.i(TAG, "Auto-login form submitted successfully")
     }
     
     /**
-     * Обработка игровой страницы (аналог GamePhp.cs)
+     * Обработка игровой страницы (проверка на запрос Flash пароля)
      */
     private fun handleGamePage(webView: WebView, url: String) {
         Log.d(TAG, "Handling game page: $url")
         
-        // Если ожидаем flash и есть flash пароль
-        if (isWaitingForFlash && !currentProfile?.userPasswordFlash.isNullOrBlank()) {
-            onAutoLoginStatus("Ввод Flash-пароля...")
-            coroutineScope.launch {
-                delay(INJECTION_DELAY_MS)
-                handleFlashPassword(webView)
-            }
-        } else {
-            // Обрабатываем обычную игровую страницу
-            onAutoLoginStatus("Проверка игрового контента...")
-            coroutineScope.launch {
-                delay(INJECTION_DELAY_MS)
-                handleGameContent(webView)
-            }
+        // Сначала проверяем, не требуется ли Flash пароль
+        onAutoLoginStatus("Проверка требования Flash пароля...")
+        coroutineScope.launch {
+            delay(INJECTION_DELAY_MS)
+            checkForFlashPasswordRequest(webView)
         }
     }
     
     /**
-     * Обработка Flash пароля (аналог GamePhp.cs)
+     * Проверяет, требуется ли Flash пароль (аналог GamePhp.cs)
      */
-    private fun handleFlashPassword(webView: WebView) {
-        val flashPassword = currentProfile?.userPasswordFlash ?: return
-        
-        Log.d(TAG, "Attempting to handle flash password")
-        
-        val flashPasswordScript = """
+    private fun checkForFlashPasswordRequest(webView: WebView) {
+        val checkFlashScript = """
             (function() {
-                console.log('Checking for flash password form...');
+                console.log('Checking for Flash password request...');
                 
-                // Ищем flashvars с plid
-                var pageContent = document.documentElement.outerHTML;
-                var flashVarsMatch = pageContent.match(/flashvars=["']plid=([^"']+)["']/);
+                // Ищем flashvars="plid= в HTML (аналог GamePhp.cs)
+                var pageHtml = document.documentElement.outerHTML;
+                var flashPattern = /flashvars="plid=([^"]+)"/;
+                var match = pageHtml.match(flashPattern);
                 
-                if (!flashVarsMatch) {
-                    console.log('Flash vars not found');
-                    return false;
+                if (match && match[1]) {
+                    console.log('Flash password required, player ID:', match[1]);
+                    return 'FLASH_REQUIRED:' + match[1];
                 }
                 
-                var plid = flashVarsMatch[1];
-                console.log('Found plid:', plid);
-                
-                // Создаем и отправляем форму с flash паролем
-                var form = document.createElement('form');
-                form.method = 'POST';
-                form.action = './game.php';
-                
-                var flcheckInput = document.createElement('input');
-                flcheckInput.type = 'hidden';
-                flcheckInput.name = 'flcheck';
-                flcheckInput.value = '$flashPassword';
-                form.appendChild(flcheckInput);
-                
-                var nidInput = document.createElement('input');
-                nidInput.type = 'hidden';
-                nidInput.name = 'nid';
-                nidInput.value = plid;
-                form.appendChild(nidInput);
-                
-                document.body.appendChild(form);
-                
-                console.log('Submitting flash password form...');
-                form.submit();
-                
-                return true;
+                // Проверяем наличие HTML5 игрового контента
+                console.log('No Flash password required, checking game content...');
+                return 'GAME_CONTENT';
             })();
         """.trimIndent()
         
-        webView.evaluateJavascript(flashPasswordScript) { result ->
-            Log.d(TAG, "Flash password script result: $result")
-            if (result == "true") {
-                isWaitingForFlash = false
-                onAutoLoginStatus("Вход в игру завершен")
-                Log.i(TAG, "Flash password submitted successfully")
-            } else {
-                onAutoLoginStatus("Ошибка ввода Flash-пароля")
+        webView.evaluateJavascript(checkFlashScript) { result ->
+            Log.d(TAG, "Flash check result: $result")
+            when {
+                result.startsWith("\"FLASH_REQUIRED:") -> {
+                    val playerId = result.substring(16, result.length - 1) // убираем "FLASH_REQUIRED: и "
+                    handleFlashPasswordRequired(webView, playerId)
+                }
+                result == "\"GAME_CONTENT\"" -> {
+                    handleHTML5GameContent(webView)
+                }
+                else -> {
+                    onAutoLoginStatus("Неизвестный ответ сервера")
+                }
             }
         }
     }
     
     /**
-     * Обработка игрового контента для предотвращения белого экрана
+     * Обрабатывает запрос Flash пароля (аналог GamePhp.cs)
      */
-    private fun handleGameContent(webView: WebView) {
-        Log.d(TAG, "Handling game content")
+    private fun handleFlashPasswordRequired(webView: WebView, playerId: String) {
+        Log.d(TAG, "Flash password required for player ID: $playerId")
         
-        val gameContentScript = """
+        if (currentProfile?.userPasswordFlash?.isNotEmpty() != true) {
+            onAutoLoginStatus("Требуется Flash пароль, но он не задан в профиле")
+            Log.w(TAG, "Flash password required but not set in profile")
+            return
+        }
+        
+        onAutoLoginStatus("Отправка Flash пароля...")
+        
+        // Создаем HTML с Flash паролем (аналог GamePhp.cs)
+        val flashPasswordHtml = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Ввод флеш-пароля...</title>
+                <meta charset="UTF-8">
+            </head>
+            <body>
+                <div style="text-align: center; margin-top: 50px; font-family: Arial;">
+                    <h3>Ввод флеш-пароля...</h3>
+                    <p>Выполняется дополнительная аутентификация...</p>
+                </div>
+                <form action="./game.php" method="POST" name="ff">
+                    <input name="flcheck" type="hidden" value="${currentProfile?.userPasswordFlash ?: ""}">
+                    <input name="nid" type="hidden" value="$playerId">
+                </form>
+                <script language="JavaScript">
+                    console.log('Auto-submitting Flash password form...');
+                    document.ff.submit();
+                </script>
+            </body>
+            </html>
+        """.trimIndent()
+        
+        // Загружаем HTML с Flash паролем
+        webView.loadDataWithBaseURL(
+            "http://www.neverlands.ru/",
+            flashPasswordHtml,
+            "text/html",
+            "UTF-8",
+            null
+        )
+        
+        onAutoLoginStatus("Flash пароль отправлен...")
+        Log.i(TAG, "Flash password form submitted for player ID: $playerId")
+    }
+    
+    /**
+     * Обработка HTML5 игрового контента
+     */
+    private fun handleHTML5GameContent(webView: WebView) {
+        Log.d(TAG, "Handling HTML5 game content")
+        
+        val html5GameScript = """
             (function() {
-                console.log('Checking game content...');
+                console.log('Checking HTML5 game content...');
                 
                 // Проверяем, есть ли контент на странице
                 var body = document.body;
@@ -304,52 +331,53 @@ class GameWebViewClient(
                     return false;
                 }
                 
-                // Проверяем наличие игрового контента или iframe
-                var gameElements = document.querySelectorAll('iframe, object, embed, canvas, [class*="game"], [id*="game"]');
-                console.log('Found game elements:', gameElements.length);
+                // Проверяем наличие HTML5 игровых элементов
+                var gameElements = document.querySelectorAll('canvas, [class*="game"], [id*="game"], iframe');
+                console.log('Found HTML5 game elements:', gameElements.length);
                 
-                // Проверяем наличие Flash объектов
-                var flashElements = document.querySelectorAll('object[type*="flash"], embed[type*="flash"]');
-                console.log('Found flash elements:', flashElements.length);
-                
-                // Если нет игровых элементов, проверяем ошибки
-                if (gameElements.length === 0 && flashElements.length === 0) {
-                    console.log('No game elements found');
-                    
-                    // Проверяем наличие JavaScript ошибок или проблем загрузки
-                    var errorMessages = document.querySelectorAll('.error, .warning, [class*="error"], [class*="warn"]');
-                    if (errorMessages.length > 0) {
-                        console.log('Error messages found on page');
-                        return false;
-                    }
-                    
-                    // Проверяем, есть ли текст о необходимости Flash Player
-                    var bodyText = body.textContent || body.innerText || '';
-                    if (bodyText.toLowerCase().includes('flash') || 
-                        bodyText.toLowerCase().includes('plugin') ||
-                        bodyText.toLowerCase().includes('adobe')) {
-                        console.log('Flash-related content detected');
-                        return true;
-                    }
-                    
-                    // Если страница выглядит пустой, пробуем перезагрузить
-                    if (bodyText.trim().length < 100) {
-                        console.log('Page appears to be mostly empty, reloading...');
-                        setTimeout(function() {
-                            window.location.reload();
-                        }, 2000);
-                        return false;
-                    }
+                // Проверяем наличие JavaScript ошибок
+                var errorMessages = document.querySelectorAll('.error, .warning, [class*="error"], [class*="warn"]');
+                if (errorMessages.length > 0) {
+                    console.log('Error messages found on page');
+                    var errorText = Array.from(errorMessages).map(el => el.textContent).join('; ');
+                    console.log('Errors:', errorText);
+                    return false;
                 }
                 
-                console.log('Game content appears to be loaded correctly');
+                // Проверяем наличие JavaScript скриптов игры
+                var scripts = document.querySelectorAll('script[src*="game"], script[src*="main"]');
+                console.log('Found game scripts:', scripts.length);
+                
+                // Ожидаем загрузку скриптов
+                var scriptsLoaded = 0;
+                Array.from(scripts).forEach(function(script) {
+                    if (script.readyState === 'complete' || script.readyState === 'loaded') {
+                        scriptsLoaded++;
+                    }
+                });
+                
+                // Проверяем, что страница не пустая
+                var bodyText = body.textContent || body.innerText || '';
+                if (bodyText.trim().length < 50 && gameElements.length === 0) {
+                    console.log('Page appears to be mostly empty, reloading...');
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 2000);
+                    return false;
+                }
+                
+                console.log('HTML5 game content appears to be loaded correctly');
                 return true;
             })();
         """.trimIndent()
         
-        webView.evaluateJavascript(gameContentScript) { result ->
-            Log.d(TAG, "Game content check result: $result")
-            isWaitingForFlash = false
+        webView.evaluateJavascript(html5GameScript) { result ->
+            Log.d(TAG, "HTML5 game content check result: $result")
+            if (result == "true") {
+                onAutoLoginStatus("Игра загружена успешно")
+            } else {
+                onAutoLoginStatus("Проблема с загрузкой игры")
+            }
         }
     }
     

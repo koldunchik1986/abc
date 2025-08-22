@@ -8,6 +8,7 @@ import ru.neverlands.abclient.core.browser.BrowserEmulationManager
 import ru.neverlands.abclient.core.network.interceptor.CookieInterceptor
 import ru.neverlands.abclient.core.network.interceptor.GameServerInterceptor
 import ru.neverlands.abclient.core.api.NeverlandsApiClient
+import ru.neverlands.abclient.core.filter.HttpFilter
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -20,7 +21,8 @@ import javax.inject.Singleton
 class GameHttpClient @Inject constructor(
     private val context: Context,
     private val browserEmulationManager: BrowserEmulationManager,
-    private val cookieJar: CookieJar
+    private val cookieJar: CookieJar,
+    private val httpFilter: HttpFilter
 ) {
     
     private val client: OkHttpClient by lazy {
@@ -48,6 +50,9 @@ class GameHttpClient @Inject constructor(
         
         // Interceptor для работы с cookies
         builder.addInterceptor(CookieInterceptor())
+        
+        // PostFilter system - модификация ответов neverlands.ru
+        builder.addInterceptor(httpFilter)
         
         // Логирование в debug режиме
         try {

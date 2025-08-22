@@ -1,0 +1,38 @@
+// Gradle init script to disable JDK image transformation for GraalVM compatibility
+allprojects {
+    afterEvaluate { project ->
+        if (project.plugins.hasPlugin('com.android.application') || 
+            project.plugins.hasPlugin('com.android.library')) {
+            
+            // Force disable Android JDK image features
+            project.android {
+                compileOptions {
+                    sourceCompatibility = JavaVersion.VERSION_11
+                    targetCompatibility = JavaVersion.VERSION_11
+                }
+            }
+            
+            // Disable JDK image transformation in configurations
+            project.configurations.all { config ->
+                config.resolutionStrategy.eachDependency { details ->
+                    // Skip JDK image related transformations
+                    if (details.requested.name.contains('core-for-system-modules')) {
+                        details.because('Avoiding GraalVM jlink compatibility issues')
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Disable JDK image related tasks globally
+gradle.taskGraph.whenReady { taskGraph ->
+    taskGraph.allTasks.each { task ->
+        if (task.name.contains('JdkImage') || 
+            task.name.contains('jdkImage') ||
+            task.class.name.contains('JdkImageTransform')) {
+            task.enabled = false
+            println "Disabled task ${task.name} for GraalVM compatibility"
+        }
+    }
+}

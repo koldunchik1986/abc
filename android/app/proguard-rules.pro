@@ -2,74 +2,70 @@
 # You can control the set of applied configuration files using the
 # proguardFiles setting in build.gradle.
 
-# Keep Hilt components
--keep class * extends dagger.hilt.android.internal.managers.ViewComponentManager$FragmentContextWrapper { *; }
--keep class dagger.hilt.android.** { *; }
+# Оптимизированные правила для ускорения R8
 
-# Keep ABClient classes
--keep class ru.neverlands.abclient.** { *; }
+# Keep только критически важные Hilt компоненты
+-keep class dagger.hilt.android.internal.managers.ViewComponentManager$FragmentContextWrapper { *; }
+-keep class dagger.hilt.** { *; }
+-keep @dagger.hilt.InstallIn class *
+-keep @dagger.hilt.android.AndroidEntryPoint class *
 
-# Keep OkHttp classes
+# Keep только пользовательские data классы и модели
+-keep class ru.neverlands.abclient.data.model.** { *; }
+-keep class ru.neverlands.abclient.data.api.** { *; }
+-keep class ru.neverlands.abclient.data.dto.** { *; }
+
+# Оптимизированные правила для network
 -dontwarn okhttp3.**
 -dontwarn okio.**
--keep class okhttp3.** { *; }
--keep class okio.** { *; }
+-dontwarn retrofit2.**
+-keep class retrofit2.** { *; }
 
-# Keep Gson classes for serialization
+# Gson минимальные правила
 -keepattributes Signature
 -keepattributes *Annotation*
--dontwarn sun.misc.**
--keep class com.google.gson.** { *; }
--keep class * implements com.google.gson.TypeAdapterFactory
--keep class * implements com.google.gson.JsonSerializer
--keep class * implements com.google.gson.JsonDeserializer
+-keep class com.google.gson.reflect.TypeToken { *; }
+-keep class * extends com.google.gson.reflect.TypeToken
 
-# Keep WebView classes
--keep class android.webkit.** { *; }
+# WebView критически важные классы
+-keep class android.webkit.JavascriptInterface
+-keep class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
 
-# Keep WorkManager classes
--keep class androidx.work.** { *; }
-
-# Keep DataStore classes
--keep class androidx.datastore.** { *; }
-
-# Keep ErrorProne annotations (fix for missing classes)
+# ErrorProne (только предупреждения)
 -dontwarn com.google.errorprone.annotations.**
--keep class com.google.errorprone.annotations.** { *; }
 
-# Keep Tink crypto classes
--keep class com.google.crypto.tink.** { *; }
--dontwarn com.google.crypto.tink.**
+# Google API Client (missing classes detected by R8)
+-dontwarn com.google.api.client.http.GenericUrl
+-dontwarn com.google.api.client.http.HttpHeaders
+-dontwarn com.google.api.client.http.HttpRequest
+-dontwarn com.google.api.client.http.HttpRequestFactory
+-dontwarn com.google.api.client.http.HttpResponse
+-dontwarn com.google.api.client.http.HttpTransport
+-dontwarn com.google.api.client.http.javanet.NetHttpTransport$Builder
+-dontwarn com.google.api.client.http.javanet.NetHttpTransport
+-dontwarn org.joda.time.Instant
 
-# Keep security crypto classes
--keep class androidx.security.crypto.** { *; }
+# Security crypto минимум
+-keep class androidx.security.crypto.MasterKey { *; }
+-keep class androidx.security.crypto.EncryptedFile { *; }
+-keep class androidx.security.crypto.EncryptedSharedPreferences { *; }
 
-# Keep Jetpack Compose classes
--keep class androidx.compose.** { *; }
+# Compose оптимизация - позволяем R8 оптимизировать неиспользуемые компоненты
+-keep class androidx.compose.runtime.Composer { *; }
+-keep class androidx.compose.runtime.ComposerKt { *; }
 
-# Keep Kotlin metadata
+# Kotlin metadata минимум
 -keepattributes RuntimeVisibleAnnotations
--keepattributes RuntimeInvisibleAnnotations
--keepattributes RuntimeVisibleParameterAnnotations
--keepattributes RuntimeInvisibleParameterAnnotations
+-keepattributes SourceFile,LineNumberTable
 
-# Keep enum classes
+# Standard Android rules
 -keepclassmembers enum * {
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
 
-# Keep Parcelable classes
 -keep class * implements android.os.Parcelable {
     public static final android.os.Parcelable$Creator *;
-}
-
-# Keep serializable classes
--keepclassmembers class * implements java.io.Serializable {
-    static final long serialVersionUID;
-    private static final java.io.ObjectStreamField[] serialPersistentFields;
-    private void writeObject(java.io.ObjectOutputStream);
-    private void readObject(java.io.ObjectInputStream);
-    java.lang.Object writeReplace();
-    java.lang.Object readResolve();
 }
