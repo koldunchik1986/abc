@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Background -->
+    <path
+        android:fillColor="#3DDC84"
+        android:pathData="M0,0h108v108h-108z" />
+    
+    <!-- Icon -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M30,30h48v48h-48z" />
+    
+    <!-- Castle/Game symbol -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M35,40h8v20h-8z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M45,35h8v25h-8z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M55,40h8v20h-8z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,40h34v4h-34z" />
+    
+    <!-- Text "AB" -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M40,70 L40,75 L45,75 L45,70 L50,70 L50,75 L55,75 L55,70 Z" />
+</vector>

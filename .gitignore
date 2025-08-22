@@ -191,6 +191,17 @@ orleans.codegen.cs
 # RIA/Silverlight projects
 Generated_Code/
 
+# Android specific files
+android/gradle.properties
+android/**/*.jks
+android/**/*.keystore
+android/app/koldunchik1986-key.jks
+android/.gradle/
+android/build/
+android/app/build/
+android/**/*.apk
+android/**/*.aab
+
 # Backup & report files from converting an old project file
 # to a newer Visual Studio version. Backup files are not needed,
 # because we have git ;-)

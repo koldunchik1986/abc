@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Round background -->
+    <path
+        android:fillColor="#3DDC84"
+        android:pathData="M54,54m-50,0a50,50 0,1 1,100 0a50,50 0,1 1,-100 0" />
+    
+    <!-- Icon content same as regular launcher -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M35,40h8v20h-8z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M45,35h8v25h-8z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M55,40h8v20h-8z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,40h34v4h-34z" />
+</vector>

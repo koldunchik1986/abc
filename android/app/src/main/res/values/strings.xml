@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ABClient</string>
+    <string name="never_lands">Neverlands</string>
+    <string name="online_status">Онлайн статус</string>
+    <string name="stop">Остановить</string>
+    <string name="settings">Настройки</string>
+    <string name="profiles">Профили</string>
+    <string name="new_tab">Новая вкладка</string>
+    <string name="game">Игра</string>
+    <string name="forum">Форум</string>
+    <string name="chat">Чат</string>
+    <string name="notepad">Блокнот</string>
+</resources>

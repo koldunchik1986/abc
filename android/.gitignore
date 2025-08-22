@@ -1,0 +1,41 @@
+# Android-specific files
+/build/
+/app/build/
+*.apk
+*.aab
+*.dex
+*.class
+
+# Local configuration files (may contain sensitive data)
+local.properties
+gradle.properties
+
+# Signing files (NEVER commit these!)
+*.jks
+*.keystore
+app/koldunchik1986-key.jks
+koldunchik1986-key.jks
+
+# Generated files
+.gradle/
+/.idea/
+*.iml
+*.ipr
+*.iws
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Android Studio 
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Lint
+lint-report.html
+lint-report_files/
+lint-results.xml
