@@ -198,3 +198,18 @@ class InventoryViewModel @Inject constructor(
                 price = 300,
                 sellPrice = 270,
                 level = 15,
+                mass = 2,
+                durability = "1/1",
+                properties = "Маг. урон: +20, Защита: +10",
+                canWear = true,
+                canUse = false,
+                canSell = true,
+                wearLink = "main.php?wear=126",
+                pssLink = "main.php?sell=126",
+                dropLink = "main.php?drop=126",
+                expiryDate = "",
+                isExpired = false
+            )
+        )
+    }
+}

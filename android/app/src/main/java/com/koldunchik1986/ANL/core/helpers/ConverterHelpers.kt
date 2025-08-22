@@ -198,3 +198,12 @@ object ConverterHelpers {
     /**
      * Получение времени из строки
      */
+    fun getTimeFromString(timeStr: String): Date? {
+        return try {
+            val formatter = SimpleDateFormat("HH:mm", Locale.getDefault())
+            formatter.parse(timeStr)
+        } catch (e: Exception) {
+            null
+        }
+    }
+}

@@ -56,7 +56,7 @@ class GameHttpClient @Inject constructor(
         
         // Логирование в debug режиме
         try {
-            val debugField = Class.forName("com.koldunchik1986.ANL.BuildConfig").getField("DEBUG"))
+            val debugField = Class.forName("com.koldunchik1986.ANL.BuildConfig").getField("DEBUG")
             val isDebug = debugField.getBoolean(null)
             if (isDebug) {
                 val loggingInterceptor = HttpLoggingInterceptor().apply {

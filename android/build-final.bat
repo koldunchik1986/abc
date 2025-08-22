@@ -1,10 +1,10 @@
 @echo off
 REM Финальная сборка ABClient Release с полным обходом JDK image проблем
-set JAVA_HOME=C:\Program Files\graalvm-jdk-21
-set PATH=C:\Program Files\graalvm-jdk-21\bin;%PATH%
+set JAVA_HOME=C:\Program Files\java\jdk-17
+set PATH=C:\Program Files\java\jdk-17\bin;%PATH%
 
 REM Максимальные настройки для обхода JDK image трансформации
-set GRADLE_OPTS=-Dorg.gradle.java.home="C:\Program Files\graalvm-jdk-21"
+set GRADLE_OPTS=-Dorg.gradle.java.home="C:\Program Files\java\jdk-17"
 set GRADLE_OPTS=%GRADLE_OPTS% -Dandroid.useAndroidJdkImage=false
 set GRADLE_OPTS=%GRADLE_OPTS% -Dandroid.enableJdkToolchain=false
 set GRADLE_OPTS=%GRADLE_OPTS% -Dandroid.experimental.enableJdkImage=false

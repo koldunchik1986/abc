@@ -197,3 +197,21 @@ object StringHelpers {
     /**
      * Извлечение всех подстрок между двумя строками
      */
+    fun extractAllSubstrings(html: String, startTag: String, endTag: String): List<String> {
+        val result = mutableListOf<String>()
+        var startPos = 0
+        
+        while (startPos < html.length) {
+            val p1 = html.indexOf(startTag, startPos, ignoreCase = true)
+            if (p1 == -1) break
+            
+            val p2 = html.indexOf(endTag, p1 + startTag.length, ignoreCase = true)
+            if (p2 == -1) break
+            
+            result.add(html.substring(p1 + startTag.length, p2))
+            startPos = p2 + endTag.length
+        }
+        
+        return result
+    }
+}

@@ -13,7 +13,7 @@ import com.koldunchik1986.ANL.ui.settings.SettingsUiState
 import com.koldunchik1986.ANL.ui.settings.SettingsSection
 
 /**
- * Основные настройки приложения
+ * Общие настройки приложения
  */
 @Composable
 fun GeneralSettingsSection(
@@ -23,7 +23,7 @@ fun GeneralSettingsSection(
     onTrayBalloonsChanged: (Boolean) -> Unit
 ) {
     SettingsSection(
-        title = "Основные настройки",
+        title = "Общие настройки",
         icon = { Icon(Icons.Default.Settings, contentDescription = null) }
     ) {
         Row(
@@ -35,7 +35,7 @@ fun GeneralSettingsSection(
                 onCheckedChange = onPromptExitChanged
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Подтверждение выхода")
+            Text("Подтверждать выход из приложения")
         }
         
         Row(
@@ -47,7 +47,7 @@ fun GeneralSettingsSection(
                 onCheckedChange = onTrayChanged
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Сворачивать в трей")
+            Text("Сворачивать в системный трей")
         }
         
         Row(
@@ -60,7 +60,7 @@ fun GeneralSettingsSection(
                 enabled = uiState.doTray
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Показывать уведомления")
+            Text("Показывать уведомления из трея")
         }
     }
 }
@@ -90,7 +90,7 @@ fun ChatSettingsSection(
                 onCheckedChange = onKeepMovingChanged
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Сохранять чат при перемещении")
+            Text("Сохранять чат при движении")
         }
         
         Row(
@@ -122,7 +122,7 @@ fun ChatSettingsSection(
             onValueChange = { newValue ->
                 newValue.toIntOrNull()?.let { onChatSizeChanged(it) }
             },
-            label = { Text("Размер лога чата (строк)") },
+            label = { Text("Размер лога чата (Кб)") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -238,7 +238,7 @@ fun MapSettingsSection(
                 onCheckedChange = onDrawRegionChanged
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Отображать регионы")
+            Text("Рисовать регионы")
         }
         
         Divider()
@@ -254,38 +254,39 @@ fun MapSettingsSection(
                 onCheckedChange = onShowMiniMapChanged
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Отображать мини-карту")
+            Text("Показывать мини-карту")
         }
         
         if (uiState.mapShowMiniMap) {
             OutlinedTextField(
                 value = uiState.mapMiniWidth.toString(),
                 onValueChange = { newValue ->
-                newValue.toIntOrNull()?.let { onMiniMapWidthChanged(it) }
-            },
-            label = { Text("Ширина мини-карты") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-        
-        OutlinedTextField(
-            value = uiState.mapMiniHeight.toString(),
-            onValueChange = { newValue ->
-                newValue.toIntOrNull()?.let { onMiniMapHeightChanged(it) }
-            },
-            label = { Text("Высота мини-карты") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-        
-        Column {
-            Text("Масштаб мини-карты: ${uiState.mapMiniScale}")
-            Slider(
-                value = uiState.mapMiniScale,
-                onValueChange = onMiniMapScaleChanged,
-                valueRange = 0.1f..2.0f,
-                modifier = Modifier.fillMaxWidth()
+                    newValue.toIntOrNull()?.let { onMiniMapWidthChanged(it) }
+                },
+                label = { Text("Ширина мини-карты") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
             )
+            
+            OutlinedTextField(
+                value = uiState.mapMiniHeight.toString(),
+                onValueChange = { newValue ->
+                    newValue.toIntOrNull()?.let { onMiniMapHeightChanged(it) }
+                },
+                label = { Text("Высота мини-карты") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+            
+            Column {
+                Text("Масштаб мини-карты: ${uiState.mapMiniScale}")
+                Slider(
+                    value = uiState.mapMiniScale,
+                    onValueChange = onMiniMapScaleChanged,
+                    valueRange = 0.1f..2.0f,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
     }
 }
@@ -340,7 +341,7 @@ fun FishingSettingsSection(
                 onCheckedChange = onStopOverWeightChanged
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Останавливаться при перегрузе")
+            Text("Останавливаться при перевесе")
         }
         
         Row(
@@ -352,13 +353,13 @@ fun FishingSettingsSection(
                 onCheckedChange = onAutoWearChanged
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Автоматически одевать снасти")
+            Text("Автоматически надевать снаряжение")
         }
         
         OutlinedTextField(
             value = uiState.fishHandOne,
             onValueChange = onHandOneChanged,
-            label = { Text("Левая рука") },
+            label = { Text("Правая рука") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -366,7 +367,7 @@ fun FishingSettingsSection(
         OutlinedTextField(
             value = uiState.fishHandTwo,
             onValueChange = onHandTwoChanged,
-            label = { Text("Правая рука") },
+            label = { Text("Левая рука") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -380,7 +381,7 @@ fun FishingSettingsSection(
                 onCheckedChange = onChatReportChanged
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Отчет в чат")
+            Text("Отчеты в чат")
         }
         
         Row(
@@ -392,7 +393,7 @@ fun FishingSettingsSection(
                 onCheckedChange = onChatReportColorChanged
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Цветной отчет")
+            Text("Цветные отчеты")
         }
     }
 }
