@@ -11,9 +11,9 @@
 -keep @dagger.hilt.android.AndroidEntryPoint class *
 
 # Keep только пользовательские data классы и модели
--keep class ru.neverlands.abclient.data.model.** { *; }
--keep class ru.neverlands.abclient.data.api.** { *; }
--keep class ru.neverlands.abclient.data.dto.** { *; }
+-keep class com.koldunchik1986.ANL.data.model.** { *; }
+-keep class com.koldunchik1986.ANL.data.api.** { *; }
+-keep class com.koldunchik1986.ANL.data.dto.** { *; }
 
 # Оптимизированные правила для network
 -dontwarn okhttp3.**

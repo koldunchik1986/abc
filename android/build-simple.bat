@@ -1,17 +1,17 @@
 @echo off
-REM Simple ABClient Release build with Oracle JDK 17
-set JAVA_HOME=C:\Program Files\Java\jdk-17
-set PATH=C:\Program Files\Java\jdk-17\bin;%PATH%
+REM Simple ANL Release build with GraalVM JDK 21
+set JAVA_HOME=C:\Program Files\graalvm-jdk-21
+set PATH=C:\Program Files\graalvm-jdk-21\bin;%PATH%
 
-REM Oracle JDK 17 compatibility settings
-set GRADLE_OPTS=-Dorg.gradle.java.home="C:\Program Files\Java\jdk-17"
+REM GraalVM JDK 21 compatibility settings
+set GRADLE_OPTS=-Dorg.gradle.java.home="C:\Program Files\graalvm-jdk-21"
 set GRADLE_OPTS=%GRADLE_OPTS% -Dandroid.useAndroidJdkImage=false
 set GRADLE_OPTS=%GRADLE_OPTS% -Dandroid.enableJdkToolchain=false
 set GRADLE_OPTS=%GRADLE_OPTS% -Dandroid.experimental.enableJdkImage=false
 set GRADLE_OPTS=%GRADLE_OPTS% -Dorg.gradle.jvmargs="-Xmx6144m -XX:MaxMetaspaceSize=512m"
 set GRADLE_OPTS=%GRADLE_OPTS% -Dorg.gradle.daemon=false
 
-echo Сборка ABClient Release (Oracle JDK 17)
+echo Сборка ANL Release (GraalVM JDK 21)
 echo JAVA_HOME: %JAVA_HOME%
 
 REM Run without clean to avoid file locking issues

@@ -20,7 +20,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
-        android:name=".ABClientApplication"
+        android:name=".ANLClientApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -129,7 +129,7 @@
         <!-- File Provider для sharing логов -->
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="ru.neverlands.abclient.fileprovider"
+            android:authorities="com.koldunchik1986.ANL.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

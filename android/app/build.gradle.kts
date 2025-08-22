@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "ru.neverlands.abclient"
+    namespace = "com.koldunchik1986.ANL"
     compileSdk = 34
     
     // Полное отключение JDK image transformation для Oracle JDK 17
@@ -27,7 +27,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "ru.neverlands.abclient"
+        applicationId = "com.koldunchik1986.ANL"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -64,6 +64,16 @@ android {
             isDebuggable = false
             isJniDebuggable = false
             isPseudoLocalesEnabled = false
+        }
+    }
+
+    // Автоматическое именование APK файлов
+    applicationVariants.all {
+        outputs.all {
+            val outputImpl = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            val appName = "ANL"
+            val versionName = defaultConfig.versionName
+            outputImpl.outputFileName = "${appName}_v${versionName}.apk"
         }
     }
 

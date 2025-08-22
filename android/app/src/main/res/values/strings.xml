@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ABClient</string>
+    <string name="app_name">ANL</string>
     <string name="never_lands">Neverlands</string>
     <string name="online_status">Онлайн статус</string>
     <string name="stop">Остановить</string>
