@@ -20,24 +20,15 @@ class BrowserEmulationManager @Inject constructor(
 ) {
     
     companion object {
-        // User-Agent для имитации Chrome на Android
-        private const val USER_AGENT = "Mozilla/5.0 (Linux; Android 13; SM-G981B) " +
-                "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                "Chrome/120.0.0.0 Mobile Safari/537.36"
+        // User-Agent для совместимости с Windows версией (критически важно!)
+        private const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
         
-        // Стандартные заголовки браузера
+        // Стандартные заголовки браузера (согласно эталону)
         private val BROWSER_HEADERS = mapOf(
-            "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9," +
-                    "image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Accept-Language" to "ru-RU,ru;q=0.9,en;q=0.8",
-            "Accept-Encoding" to "gzip, deflate, br",
-            "DNT" to "1",
-            "Connection" to "keep-alive",
-            "Upgrade-Insecure-Requests" to "1",
-            "Sec-Fetch-Dest" to "document",
-            "Sec-Fetch-Mode" to "navigate",
-            "Sec-Fetch-Site" to "none",
-            "Sec-Fetch-User" to "?1"
+            "Accept-Encoding" to "gzip, deflate",
+            "Connection" to "keep-alive"
         )
     }
     
@@ -107,32 +98,21 @@ class BrowserEmulationManager @Inject constructor(
                 }
             }
             
-            // Добавляем случайные заголовки для имитации реального браузера
-            addRandomHeaders(requestBuilder, originalRequest)
+            // Критически важный Referer для neverlands.ru (согласно эталону)
+            if (originalRequest.url.host.contains("neverlands.ru")) {
+                if (originalRequest.header("Referer") == null) {
+                    requestBuilder.header("Referer", "http://www.neverlands.ru/")
+                }
+            }
             
             chain.proceed(requestBuilder.build())
         }
     }
     
     /**
-     * Добавление случайных заголовков для имитации реального браузера
+     * Добавление дополнительных заголовков (упрощено)
      */
     private fun addRandomHeaders(builder: Request.Builder, originalRequest: Request) {
-        val random = Random()
-        
-        // Добавляем случайный заголовок Cache-Control
-        if (originalRequest.header("Cache-Control") == null && random.nextBoolean()) {
-            val cacheValues = listOf("no-cache", "max-age=0", "no-store")
-            builder.header("Cache-Control", cacheValues.random())
-        }
-        
-        // Referer для neverlands.ru всегда
-        if (originalRequest.url.host.contains("neverlands.ru")) {
-            if (originalRequest.header("Referer") == null) {
-                builder.header("Referer", "http://www.neverlands.ru/")
-            }
-        }
-        
         // X-Requested-With для AJAX запросов
         if (originalRequest.url.pathSegments.any { it.contains("ajax") }) {
             builder.header("X-Requested-With", "XMLHttpRequest")

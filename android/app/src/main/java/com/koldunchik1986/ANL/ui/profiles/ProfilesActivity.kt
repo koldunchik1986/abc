@@ -171,6 +171,7 @@ private fun ProfileEditScreen(
     viewModel: ProfilesViewModel
 ) {
     var nick by remember { mutableStateOf(profile.userNick) }
+    var userKey by remember { mutableStateOf(profile.userKey) }
     var password by remember { mutableStateOf(profile.userPassword) }
     var flashPassword by remember { mutableStateOf(profile.userPasswordFlash) }
     var autoLogon by remember { mutableStateOf(profile.userAutoLogon) }
@@ -179,7 +180,7 @@ private fun ProfileEditScreen(
     var passwordsVisible by remember { mutableStateOf(false) }
     
     // Настройки прокси - аналог Windows GroupBox2
-    var useProxy by remember { mutableStateOf(profile.useProxy) }
+    var useProxy by remember { mutableStateOf(profile.doProxy) }
     var proxyAddress by remember { mutableStateOf(profile.proxyAddress) }
     var proxyUsername by remember { mutableStateOf(profile.proxyUserName) }
     var proxyPassword by remember { mutableStateOf(profile.proxyPassword) }
@@ -204,10 +205,11 @@ private fun ProfileEditScreen(
                         onClick = {
                             val updatedProfile = profile.copy(
                                 userNick = nick,
+                                userKey = userKey,
                                 userPassword = password,
                                 userPasswordFlash = flashPassword,
                                 userAutoLogon = autoLogon,
-                                useProxy = useProxy,
+                                doProxy = useProxy,
                                 proxyAddress = proxyAddress,
                                 proxyUserName = proxyUsername,
                                 proxyPassword = proxyPassword
@@ -247,6 +249,13 @@ private fun ProfileEditScreen(
                         )
                     }
                 },
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            OutlinedTextField(
+                value = userKey,
+                onValueChange = { userKey = it },
+                label = { Text("Ключ пользователя (если есть)") },
                 modifier = Modifier.fillMaxWidth()
             )
             

@@ -2,6 +2,8 @@ package com.koldunchik1986.ANL.data.model
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import java.text.SimpleDateFormat
+import java.util.*
 
 /**
  * Модель профиля пользователя - эквивалент UserConfig из Windows клиента
@@ -9,24 +11,24 @@ import kotlinx.parcelize.Parcelize
  */
 @Parcelize
 data class UserProfile(
-    // Основные данные профиля
+    // Основные данные профиля (соответствие UserConfig)
     val id: String = "",
     val userNick: String = "",
+    val userKey: String = "", // Ключ пользователя
     val userPassword: String = "",
-    val userPasswordFlash: String = "", // Flash-пароль (дополнительный пароль, если используется)
-    val userKey: String = "", // Ключ шифрования для защиты конфиденциальных данных
+    val userPasswordFlash: String = "", // Flash-пароль
     val userAutoLogon: Boolean = false,
     
-    // Параметры шифрования
-    val isEncrypted: Boolean = false,
-    val configPassword: String = "", // Пароль для шифрования конфигурации
-    val configHash: String = "", // Хэш пароля конфигурации
-    
-    // Параметры прокси
-    val useProxy: Boolean = false,
+    // Параметры прокси (соответствие UserConfig)
+    val doProxy: Boolean = false, // Переименовано с useProxy для соответствия эталону
     val proxyAddress: String = "",
     val proxyUserName: String = "",
     val proxyPassword: String = "",
+    
+    // Параметры шифрования (соответствие UserConfig)
+    val configPassword: String = "", // Пароль для шифрования конфигурации
+    val configHash: String = "", // Хэш пароля конфигурации
+    val isEncrypted: Boolean = false, // Флаг шифрования профиля
     
     // Параметры карты
     val mapShowExtended: Boolean = true,
@@ -210,14 +212,22 @@ data class UserProfile(
      * Проверка, настроен ли прокси
      */
     fun isProxyConfigured(): Boolean {
-        return useProxy && proxyAddress.isNotBlank()
+        return doProxy && proxyAddress.isNotBlank()
     }
     
     /**
-     * Проверка, защищен ли паролем
+     * Проверка, защищен ли паролем (соответствие UserConfig)
      */
     fun isPasswordProtected(): Boolean {
-        return isEncrypted && configHash.isNotBlank()
+        return configHash.isNotEmpty()
+    }
+    
+    /**
+     * Человекочитаемое форматирование даты последнего сохранения (соответствие UserConfig)
+     */
+    fun humanFormatConfigLastSaved(): String {
+        val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+        return dateFormat.format(Date(configLastSaved))
     }
     
     /**

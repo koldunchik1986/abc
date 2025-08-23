@@ -7,8 +7,11 @@ import okhttp3.logging.HttpLoggingInterceptor
 import com.koldunchik1986.ANL.core.browser.BrowserEmulationManager
 import com.koldunchik1986.ANL.core.network.interceptor.CookieInterceptor
 import com.koldunchik1986.ANL.core.network.interceptor.GameServerInterceptor
+import com.koldunchik1986.ANL.core.network.interceptor.NetworkLoggingInterceptor
 import com.koldunchik1986.ANL.core.api.NeverlandsApiClient
 import com.koldunchik1986.ANL.core.filter.HttpFilter
+import com.koldunchik1986.ANL.core.logging.NetworkLogger
+import com.koldunchik1986.ANL.core.notifications.NetworkNotificationService
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,10 +25,12 @@ class GameHttpClient @Inject constructor(
     private val context: Context,
     private val browserEmulationManager: BrowserEmulationManager,
     private val cookieJar: CookieJar,
-    private val httpFilter: HttpFilter
+    private val httpFilter: HttpFilter,
+    private val networkLogger: NetworkLogger,
+    private val notificationService: NetworkNotificationService
 ) {
     
-    private val client: OkHttpClient by lazy {
+    val client: OkHttpClient by lazy {
         createHttpClient()
     }
     
@@ -44,6 +49,9 @@ class GameHttpClient @Inject constructor(
         
         // Interceptor для добавления заголовков браузера
         builder.addInterceptor(browserEmulationManager.createBrowserHeadersInterceptor())
+        
+        // Interceptor для детального логирования (должен быть первым для логирования всего)
+        builder.addInterceptor(NetworkLoggingInterceptor(networkLogger, notificationService))
         
         // Interceptor для обработки игровых запросов
         builder.addInterceptor(GameServerInterceptor())

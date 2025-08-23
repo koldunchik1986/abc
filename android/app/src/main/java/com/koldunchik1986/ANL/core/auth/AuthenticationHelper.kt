@@ -12,11 +12,13 @@ import javax.inject.Singleton
 class AuthenticationHelper @Inject constructor() {
     
     companion object {
-        // Константы для авторизации (аналог AppConsts.cs)
+        // Константы для авторизации (соответствие эталону)
         const val GAME_HOST = "www.neverlands.ru"
+        const val BASE_URL = "http://$GAME_HOST/"
         const val GAME_URL = "http://$GAME_HOST"
-        const val INDEX_CGI_URL = "$GAME_URL/"
+        const val INDEX_CGI_URL = "$BASE_URL"
         const val GAME_PHP_URL = "$GAME_URL/game.php"
+        const val MAIN_PHP_URL = "$GAME_URL/main.php" // Правильный URL для главной страницы игры
         
         // Паттерны для поиска ошибок (аналог IndexCgi.cs)
         const val ERROR_PATTERN = "show_warn\\s*\\(\\s*[\"']([^\"']+)[\"']\\s*\\)"
@@ -28,6 +30,9 @@ class AuthenticationHelper @Inject constructor() {
         
         // Кодировка для игрового сервера (аналог Russian.Codepage)
         const val GAME_ENCODING = "windows-1251"
+        
+        // User-Agent как в эталоне (критически важно!)
+        const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     }
     
     /**
@@ -190,9 +195,31 @@ class AuthenticationHelper @Inject constructor() {
     }
     
     /**
-     * Проверяет, является ли URL страницей игры
+     * Извлечение URL капчи из HTML (аналог эталона)
      */
-    fun isGamePageUrl(url: String): Boolean {
-        return url.contains("game.php", ignoreCase = true)
+    fun extractCaptchaUrl(html: String): String? {
+        val captchaPattern = """<img[^>]*src="([^"]*captcha[^"]*)""""".toRegex()
+        val captchaMatch = captchaPattern.find(html)
+        
+        return if (captchaMatch != null) {
+            BASE_URL + captchaMatch.groupValues[1].replace("&amp;", "&")
+        } else {
+            null
+        }
+    }
+    
+    /**
+     * Проверка ответа на вход (аналог эталона)
+     */
+    fun checkLoginResponse(html: String): LoginResult {
+        return when {
+            html.contains("Неверный логин или пароль", ignoreCase = true) -> LoginResult.INVALID_CREDENTIALS
+            html.contains("Введите код", ignoreCase = true) -> LoginResult.CAPTCHA_REQUIRED
+            html.contains("error", ignoreCase = true) -> LoginResult.ERROR
+            html.contains("<canvas", ignoreCase = true) || 
+            html.contains("game", ignoreCase = true) || 
+            html.length > 5000 -> LoginResult.SUCCESS
+            else -> LoginResult.ERROR
+        }
     }
 }

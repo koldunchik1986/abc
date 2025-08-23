@@ -32,6 +32,7 @@ import com.koldunchik1986.ANL.ui.tabmanager.TabManagerActivity
 import com.koldunchik1986.ANL.ui.timer.TimerManagerActivity
 import com.koldunchik1986.ANL.ui.inventory.InventoryActivity
 import com.koldunchik1986.ANL.ui.trading.TradingActivity
+import com.koldunchik1986.ANL.ui.debug.NetworkDebugActivity
 import com.koldunchik1986.ANL.ui.theme.ABClientTheme
 
 /**
@@ -106,6 +107,10 @@ fun MainScreen() {
                             }
                             "trading" -> {
                                 val intent = TradingActivity.createIntent(context)
+                                context.startActivity(intent)
+                            }
+                            "network_debug" -> {
+                                val intent = NetworkDebugActivity.createIntent(context)
                                 context.startActivity(intent)
                             }
                         }
@@ -320,7 +325,8 @@ fun getMenuItems(): List<MenuItem> {
         MenuItem("tab_manager", "Менеджер вкладок", Icons.Default.Tab),
         MenuItem("timer_manager", "Таймеры", Icons.Default.Schedule),
         MenuItem("inventory", "Инвентарь", Icons.Default.Inventory),
-        MenuItem("trading", "Торговля", Icons.Default.AttachMoney)
+        MenuItem("trading", "Торговля", Icons.Default.AttachMoney),
+        MenuItem("network_debug", "Отладка сети", Icons.Default.BugReport)
     )
 }
 
