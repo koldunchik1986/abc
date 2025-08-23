@@ -9,11 +9,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import com.koldunchik1986.ANL.data.repository.ProfileRepository
 import com.koldunchik1986.ANL.data.model.UserProfile
+import com.koldunchik1986.ANL.core.network.ProxyDetector
 import javax.inject.Inject
 
 @HiltViewModel
 class ProfilesViewModel @Inject constructor(
-    private val profileRepository: ProfileRepository
+    private val profileRepository: ProfileRepository,
+    val proxyDetector: ProxyDetector
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(ProfilesUiState())
@@ -131,6 +133,21 @@ class ProfilesViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(
             editingProfile = null
         )
+    }
+    
+    /**
+     * Определение настроек прокси системы
+     * Аналог DetectProxy() из Windows FormProfile.cs
+     */
+    fun detectSystemProxy(onResult: (com.koldunchik1986.ANL.core.network.ProxySettings?) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val detectedProxy = proxyDetector.detectSystemProxy()
+                onResult(detectedProxy)
+            } catch (e: Exception) {
+                onResult(null)
+            }
+        }
     }
 }
 

@@ -1,10 +1,10 @@
 package com.koldunchik1986.ANL.ui.navigator
 
 /**
- * UI ��������� ����������
+ * UI состояние навигатора
  */
 data class NavigatorUiState(
-    val title: String = "���������",
+    val title: String = "Навигатор",
     val currentDestination: String = "",
     val destinationInput: String = "",
     val isDestinationValid: Boolean = true,
@@ -15,7 +15,7 @@ data class NavigatorUiState(
 )
 
 /**
- * ���������� � ��������
+ * Информация о маршруте
  */
 data class RouteInfo(
     val pathExists: Boolean = false,
@@ -25,7 +25,7 @@ data class RouteInfo(
 )
 
 /**
- * ������ �������
+ * Группа локаций
  */
 data class LocationGroup(
     val title: String,
@@ -33,7 +33,7 @@ data class LocationGroup(
 )
 
 /**
- * ���������� � �������
+ * Информация о локации
  */
 data class LocationInfo(
     val cellNumber: String,
@@ -42,7 +42,7 @@ data class LocationInfo(
 )
 
 /**
- * ������ ����� (������ GroupCell �� Windows ������)
+ * Группа ячеек (аналог GroupCell из Windows версии)
  */
 data class GroupCell(
     val title: String,
@@ -67,7 +67,7 @@ data class GroupCell(
 }
 
 /**
- * ������ ����� (���������� ������ Cell �� Windows)
+ * Ячейка карты (аналогично классу Cell из Windows)
  */
 data class MapCell(
     val cellNumber: String,
@@ -87,7 +87,7 @@ data class MapCell(
 }
 
 /**
- * ��� �� �����
+ * Бот на карте
  */
 data class MapBot(
     val name: String,
@@ -96,7 +96,7 @@ data class MapBot(
 )
 
 /**
- * ���� �� ����� (������ MapPath �� Windows ������)
+ * Путь на карте (аналог MapPath из Windows версии)
  */
 data class MapPath(
     val start: String,
@@ -116,8 +116,8 @@ data class MapPath(
     }
     
     private fun calculatePath() {
-        // ���������� ������ ������� ����
-        // � ���������� ����� ����� ������� ������ ������ ���� �� �����
+        // Алгоритм поиска кратчайшего пути
+        // В будущем здесь будет реальный алгоритм поиска пути по карте
         if (destinations.isNotEmpty() && isValidCellNumber(start)) {
             val dest = destinations.first()
             if (isValidCellNumber(dest)) {

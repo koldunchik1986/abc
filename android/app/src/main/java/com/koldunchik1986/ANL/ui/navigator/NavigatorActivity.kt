@@ -27,8 +27,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import com.koldunchik1986.ANL.ui.theme.ABClientTheme
 
 /**
- * ��������� - ������ ������ FormNavigator �� Windows ������
- * �������� �����, ������������� � ����� �������
+ * Навигатор - аналог формы FormNavigator из Windows версии
+ * Позволяет искать, перемещаться и строить маршруты
  */
 @AndroidEntryPoint
 class NavigatorActivity : ComponentActivity() {
@@ -103,12 +103,12 @@ fun NavigatorScreen(
             TopAppBar(
                 title = { 
                     Text(
-                        text = uiState.title.ifEmpty { "���������" }
+                        text = uiState.title.ifEmpty { "Навигатор" }
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "�����")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
                     }
                 },
                 actions = {
@@ -116,7 +116,7 @@ fun NavigatorScreen(
                         onClick = { viewModel.startAutoMoving() },
                         enabled = uiState.canStartMoving
                     ) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = "������ ��������")
+                        Icon(Icons.Default.PlayArrow, contentDescription = "Начать движение")
                     }
                 }
             )
@@ -127,7 +127,7 @@ fun NavigatorScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // ����� ������ � ���������
+            // Левая панель с локациями
             LocationsPanel(
                 modifier = Modifier
                     .weight(1f)
@@ -139,7 +139,7 @@ fun NavigatorScreen(
                 onFavoritesCleared = viewModel::clearFavorites
             )
             
-            // ������ ������ � ������ � �����������
+            // Правая панель с картой и информацией
             MapInfoPanel(
                 modifier = Modifier
                     .weight(1f)
@@ -170,20 +170,20 @@ private fun LocationsPanel(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // ����� �� ��������
+            // Поиск по названию
             OutlinedTextField(
                 value = uiState.searchText,
                 onValueChange = onSearchTextChanged,
-                label = { Text("����� �� ��������") },
+                label = { Text("Поиск по названию") },
                 leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = "�����")
+                    Icon(Icons.Default.Search, contentDescription = "Поиск")
                 },
                 modifier = Modifier.fillMaxWidth()
             )
             
             Spacer(modifier = Modifier.height(8.dp))
             
-            // ������ ���������� ���������
+            // Кнопки управления избранным
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -195,7 +195,7 @@ private fun LocationsPanel(
                 ) {
                     Icon(Icons.Default.Star, contentDescription = null)
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("� ���������")
+                    Text("В избранное")
                 }
                 
                 Button(
@@ -204,13 +204,13 @@ private fun LocationsPanel(
                 ) {
                     Icon(Icons.Default.Clear, contentDescription = null)
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("��������")
+                    Text("Очистить")
                 }
             }
             
             Spacer(modifier = Modifier.height(16.dp))
             
-            // ������ �������
+            // Список локаций
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -252,16 +252,16 @@ private fun MapInfoPanel(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // ���� ����������
+            // Поле назначения
             OutlinedTextField(
                 value = uiState.destinationInput,
                 onValueChange = onDestinationChanged,
-                label = { Text("���������� (��������: 8-259)") },
+                label = { Text("Назначение (например: 8-259)") },
                 isError = !uiState.isDestinationValid,
                 supportingText = {
                     if (!uiState.isDestinationValid && uiState.destinationInput.isNotEmpty()) {
                         Text(
-                            text = "�������� ������ �������",
+                            text = "Неверный формат локации",
                             color = MaterialTheme.colorScheme.error
                         )
                     }
@@ -271,7 +271,7 @@ private fun MapInfoPanel(
                         onClick = onCalculateRoute,
                         enabled = uiState.isDestinationValid
                     ) {
-                        Icon(Icons.Default.Calculate, contentDescription = "���������� �������")
+                        Icon(Icons.Default.Calculate, contentDescription = "Вычислить маршрут")
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -279,12 +279,12 @@ private fun MapInfoPanel(
             
             Spacer(modifier = Modifier.height(16.dp))
             
-            // ���������� � ��������
+            // Информация о маршруте
             RouteInfoCard(uiState = uiState)
             
             Spacer(modifier = Modifier.height(16.dp))
             
-            // ����� (�������� ��� ������� ����������)
+            // Карта (заглушка для будущей интеграции)
             MapPlaceholder(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -384,23 +384,23 @@ private fun RouteInfoCard(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = "���������� � ��������",
+                text = "Информация о маршруте",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             
             RouteInfoRow(
-                label = "���������:",
+                label = "Переходов:",
                 value = uiState.routeInfo.jumps?.toString() ?: "-"
             )
             
             RouteInfoRow(
-                label = "������� �����:",
+                label = "Уровень ботов:",
                 value = uiState.routeInfo.botLevel?.toString() ?: "-"
             )
             
             RouteInfoRow(
-                label = "���������:",
+                label = "Усталость:",
                 value = uiState.routeInfo.tiedPercentage?.let { "~$it%" } ?: "-"
             )
         }
@@ -454,13 +454,13 @@ private fun MapPlaceholder(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "�����",
+                    text = "Карта",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 if (destination.isNotEmpty()) {
                     Text(
-                        text = "����� ����������: $destination",
+                        text = "Точка назначения: $destination",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

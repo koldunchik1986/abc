@@ -22,6 +22,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import com.koldunchik1986.ANL.ui.theme.ABClientTheme
 import com.koldunchik1986.ANL.data.model.UserProfile
+import com.koldunchik1986.ANL.core.network.ProxyDetector
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -87,7 +88,8 @@ fun ProfilesScreen(
             },
             onCancel = {
                 viewModel.cancelEditing()
-            }
+            },
+            viewModel = viewModel
         )
         return@ProfilesScreen
     }
@@ -162,11 +164,28 @@ fun ProfilesScreen(
 private fun ProfileEditScreen(
     profile: UserProfile,
     onSave: (UserProfile) -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
+    viewModel: ProfilesViewModel
 ) {
     var nick by remember { mutableStateOf(profile.userNick) }
     var password by remember { mutableStateOf(profile.userPassword) }
+    var flashPassword by remember { mutableStateOf(profile.userPasswordFlash) }
     var autoLogon by remember { mutableStateOf(profile.userAutoLogon) }
+    
+    // Состояние видимости паролей - аналог checkVisiblePasswords
+    var passwordsVisible by remember { mutableStateOf(false) }
+    
+    // Настройки прокси - аналог Windows GroupBox2
+    var useProxy by remember { mutableStateOf(profile.useProxy) }
+    var proxyAddress by remember { mutableStateOf(profile.proxyAddress) }
+    var proxyUsername by remember { mutableStateOf(profile.proxyUserName) }
+    var proxyPassword by remember { mutableStateOf(profile.proxyPassword) }
+    
+    // Валидация формы - аналог CheckAvailability() из Windows
+    val nickAndPasswordPresented = nick.isNotBlank() && password.isNotBlank()
+    val proxyValid = !useProxy || (useProxy && proxyAddress.isNotBlank())
+    val formValid = nickAndPasswordPresented && proxyValid
+    val canEnableAutoLogon = nickAndPasswordPresented && !profile.isPasswordProtected()
     
     Scaffold(
         topBar = {
@@ -191,14 +210,46 @@ private fun ProfileEditScreen(
                 value = nick,
                 onValueChange = { nick = it },
                 label = { Text("Ник персонажа") },
+                isError = nick.isBlank(),
+                supportingText = {
+                    if (nick.isBlank()) {
+                        Text(
+                            text = "Обязательное поле",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
             
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Пароль") },
-                visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                label = { Text("Игровой пароль") },
+                visualTransformation = if (passwordsVisible) 
+                    androidx.compose.ui.text.input.VisualTransformation.None 
+                else 
+                    androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                isError = password.isBlank(),
+                supportingText = {
+                    if (password.isBlank()) {
+                        Text(
+                            text = "Обязательное поле",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            OutlinedTextField(
+                value = flashPassword,
+                onValueChange = { flashPassword = it },
+                label = { Text("Флеш-пароль") },
+                visualTransformation = if (passwordsVisible) 
+                    androidx.compose.ui.text.input.VisualTransformation.None 
+                else 
+                    androidx.compose.ui.text.input.PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth()
             )
             
@@ -208,9 +259,180 @@ private fun ProfileEditScreen(
             ) {
                 Checkbox(
                     checked = autoLogon,
-                    onCheckedChange = { autoLogon = it }
+                    onCheckedChange = { if (canEnableAutoLogon) autoLogon = it },
+                    enabled = canEnableAutoLogon
                 )
-                Text("Автоматический вход")
+                Column {
+                    Text("Автоматический вход")
+                    if (!canEnableAutoLogon && profile.isPasswordProtected()) {
+                        Text(
+                            text = "(если пароли не шифрованы)",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+            
+            // Группа "Настройки паролей" - аналог Windows GroupBox1
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "Настройки паролей",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    
+                    // Линк для шифрования паролей - аналог linkPasswordProtected
+                    TextButton(
+                        onClick = {
+                            // TODO: реализовать шифрование/дешифрование профиля
+                        },
+                        enabled = nickAndPasswordPresented,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                if (profile.isPasswordProtected()) Icons.Default.Lock else Icons.Default.LockOpen,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                if (profile.isPasswordProtected()) 
+                                    "Пароли защищены (отключить шифрование)" 
+                                else 
+                                    "Зашифровать пароли (рекомендуется)"
+                            )
+                        }
+                    }
+                    
+                    // Чекбокс видимых паролей - аналог checkVisiblePasswords
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Checkbox(
+                            checked = passwordsVisible,
+                            onCheckedChange = { passwordsVisible = it }
+                        )
+                        Text("Видимые пароли")
+                    }
+                }
+            }
+            
+            // Группа "Настройки прокси" - аналог Windows GroupBox2
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "Настройки прокси",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Checkbox(
+                            checked = useProxy,
+                            onCheckedChange = { useProxy = it }
+                        )
+                        Text("Работа через прокси")
+                        
+                        Spacer(modifier = Modifier.weight(1f))
+                        
+                        // Кнопка автоопределения прокси - аналог linkDetectProxy
+                        TextButton(
+                            onClick = {
+                                // Автоопределение настроек прокси системы
+                                viewModel.detectSystemProxy { detectedSettings ->
+                                    if (detectedSettings != null) {
+                                        useProxy = true
+                                        proxyAddress = detectedSettings.address
+                                        proxyUsername = detectedSettings.username
+                                        proxyPassword = detectedSettings.password
+                                    } else {
+                                        // Прокси не обнаружен
+                                        useProxy = false
+                                        proxyAddress = ""
+                                        proxyUsername = ""
+                                        proxyPassword = ""
+                                    }
+                                }
+                            }
+                        ) {
+                            Text(
+                                text = "Определить прокси",
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
+                    }
+                    
+                    OutlinedTextField(
+                        value = proxyAddress,
+                        onValueChange = { proxyAddress = it },
+                        label = { Text("Адрес прокси (например, localhost:3128)") },
+                        enabled = useProxy,
+                        isError = useProxy && proxyAddress.isBlank(),
+                        supportingText = {
+                            if (useProxy && proxyAddress.isBlank()) {
+                                Text(
+                                    text = "Укажите адрес прокси",
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = proxyUsername,
+                            onValueChange = { proxyUsername = it },
+                            label = { Text("Логин (если есть)") },
+                            enabled = useProxy,
+                            modifier = Modifier.weight(1f)
+                        )
+                        
+                        OutlinedTextField(
+                            value = proxyPassword,
+                            onValueChange = { proxyPassword = it },
+                            label = { Text("Пароль") },
+                            visualTransformation = if (passwordsVisible) 
+                                androidx.compose.ui.text.input.VisualTransformation.None 
+                            else 
+                                androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                            enabled = useProxy,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
             }
             
             Spacer(modifier = Modifier.weight(1f))
@@ -231,13 +453,22 @@ private fun ProfileEditScreen(
                         val updatedProfile = profile.copy(
                             userNick = nick,
                             userPassword = password,
-                            userAutoLogon = autoLogon
+                            userPasswordFlash = flashPassword,
+                            userAutoLogon = autoLogon,
+                            useProxy = useProxy,
+                            proxyAddress = proxyAddress,
+                            proxyUserName = proxyUsername,
+                            proxyPassword = proxyPassword
                         )
                         onSave(updatedProfile)
                     },
+                    enabled = formValid,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Сохранить")
+                    Text(
+                        if (nickAndPasswordPresented) "Сохранить" 
+                        else "Вход в игру"
+                    )
                 }
             }
         }

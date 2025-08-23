@@ -35,11 +35,11 @@ class NavigatorViewModel @Inject constructor(
         viewModelScope.launch {
             val initialDestination = destination ?: currentProfile?.mapLocation ?: ""
             
-            // ��������� ��������� ��� �������
+            // Установка заголовка в зависимости от наличия никнейма
             val title = if (nick != null) {
-                "��������� ��������������� $nick"
+                "Поиск по никнейму $nick"
             } else {
-                "���������"
+                "Поиск"
             }
             
             _uiState.value = _uiState.value.copy(
@@ -48,8 +48,8 @@ class NavigatorViewModel @Inject constructor(
                 destinationInput = initialDestination
             )
             
-            // ���� ��� ����� �� �������
-            if (location == "�������" && location2 != null) {
+            // Если есть координаты
+            if (location == "Компас" && location2 != null) {
                 findCompassLocations(location2)
             } else {
                 calculateRoute()
@@ -84,18 +84,18 @@ class NavigatorViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(
                 routeInfo = RouteInfo(),
                 canStartMoving = false,
-                title = "���������"
+                title = "Поиск"
             )
             return
         }
         
         viewModelScope.launch {
-            // �������� ������� �������� (� ���������� ����� ����� ��������� � Map.Cells)
+            // Расчет маршрута (в реальном проекте будет взято из Map.Cells)
             val routeInfo = calculateRouteInfo(destination)
             val title = if (routeInfo.pathExists) {
-                "������� �� $destination"
+                "Маршрут на $destination"
             } else {
-                "���������"
+                "Поиск"
             }
             
             _uiState.value = _uiState.value.copy(
@@ -110,7 +110,7 @@ class NavigatorViewModel @Inject constructor(
         val destination = _uiState.value.currentDestination
         if (destination.isNotEmpty() && _uiState.value.canStartMoving) {
             viewModelScope.launch {
-                // ����� ����� ����������� ������ ������������
+                // Установка глобальной переменной и запуск автодвижения
                 // AppVars.AutoMovingDestinaton = destination
                 // AppVars.AutoMoving = true
             }
@@ -152,7 +152,7 @@ class NavigatorViewModel @Inject constructor(
     private fun loadStandardLocations() {
         val groups = mutableListOf<LocationGroup>()
         
-        // ����������� �������
+        // Избранные локации
         currentProfile?.favLocations?.let { favorites ->
             if (favorites.isNotEmpty()) {
                 val favoriteLocations = favorites.map { cellNumber ->
@@ -164,149 +164,149 @@ class NavigatorViewModel @Inject constructor(
                 }
                 groups.add(
                     LocationGroup(
-                        title = "����������� �������",
+                        title = "Избранные локации",
                         locations = favoriteLocations
                     )
                 )
             }
         }
         
-        // �������
+        // Города
         groups.add(
             LocationGroup(
-                title = "�������",
+                title = "Города",
                 locations = listOf(
-                    LocationInfo("8-259", "8-259. �������", "�������"),
-                    LocationInfo("8-294", "8-294. �������", "�������")
+                    LocationInfo("8-259", "8-259. Столица", "Столица"),
+                    LocationInfo("8-294", "8-294. Столица", "Столица")
                 )
             )
         )
         
-        // �������
+        // Деревни
         groups.add(
             LocationGroup(
-                title = "�������",
+                title = "Деревни",
                 locations = listOf(
-                    LocationInfo("8-197", "8-197. �������", "�������")
+                    LocationInfo("8-197", "8-197. Деревня", "Деревня")
                 )
             )
         )
         
-        // �����
+        // Порты
         groups.add(
             LocationGroup(
-                title = "�����",
+                title = "Порты",
                 locations = listOf(
-                    LocationInfo("12-428", "12-428. �����", "�����"),
-                    LocationInfo("12-494", "12-494. �����", "�����"),
-                    LocationInfo("12-521", "12-521. �����", "�����")
+                    LocationInfo("12-428", "12-428. Порт", "Порт"),
+                    LocationInfo("12-494", "12-494. Порт", "Порт"),
+                    LocationInfo("12-521", "12-521. Порт", "Порт")
                 )
             )
         )
         
-        // ����� (��������� ������)
+        // Леса (различные типы)
         groups.add(
             LocationGroup(
-                title = "�����",
-                locations = getLocationsByPattern("�����")
+                title = "Леса",
+                locations = getLocationsByPattern("лес")
             )
         )
         
-        // ����� ������ 1, 2, 3
+        // Шахта уровня 1, 2, 3
         groups.add(
             LocationGroup(
-                title = "����� ������ 1",
-                locations = getLocationsByPattern("����GA")
-            )
-        )
-        
-        groups.add(
-            LocationGroup(
-                title = "����� ������ 2",
-                locations = getLocationsByPattern("����GB")
+                title = "Шахта уровня 1",
+                locations = getLocationsByPattern("ШахтA")
             )
         )
         
         groups.add(
             LocationGroup(
-                title = "����� ������ 3",
-                locations = getLocationsByPattern("����GC")
+                title = "Шахта уровня 2",
+                locations = getLocationsByPattern("ШахтB")
             )
         )
         
-        // ���� (����� ����������� ��� ���������� � ������)
         groups.add(
             LocationGroup(
-                title = "����",
+                title = "Шахта уровня 3",
+                locations = getLocationsByPattern("ШахтC")
+            )
+        )
+        
+        // Боты (будут добавляться при интеграции с картой)
+        groups.add(
+            LocationGroup(
+                title = "Боты",
                 locations = getBotLocations()
             )
         )
         
-        // ����� (����� ����������� ��� ���������� � ������)
+        // Травы (будут добавляться при интеграции с картой)
         groups.add(
             LocationGroup(
-                title = "�����",
+                title = "Травы",
                 locations = getHerbLocations()
             )
         )
         
-        // �����
+        // Пещеры
         groups.add(
             LocationGroup(
-                title = "�����",
-                locations = getLocationsByPattern("�����")
+                title = "Пещеры",
+                locations = getLocationsByPattern("пещера")
             )
         )
         
-        // ����
+        // Рыба
         groups.add(
             LocationGroup(
-                title = "����",
+                title = "Рыба",
                 locations = getFishingLocations()
             )
         )
         
-        // �������
+        // Ресурсы
         groups.add(
             LocationGroup(
-                title = "�������",
-                locations = getLocationsByPattern("������")
+                title = "Ресурсы",
+                locations = getLocationsByPattern("руда")
             )
         )
         
-        // ���������
+        // Подземелье
         groups.add(
             LocationGroup(
-                title = "���������",
-                locations = getLocationsByPattern("���������")
+                title = "Подземелье",
+                locations = getLocationsByPattern("подземелье")
             )
         )
         
-        // ���������
+        // Телепорты
         groups.add(
             LocationGroup(
-                title = "���������",
+                title = "Телепорты",
                 locations = getTeleportLocations()
             )
         )
         
-        // �������
+        // Магазины
         groups.add(
             LocationGroup(
-                title = "�������",
+                title = "Магазины",
                 locations = listOf(
-                    LocationInfo("8-227", "8-227. ������", "������"),
-                    LocationInfo("2-482", "2-482. ������", "������"),
-                    LocationInfo("9-494", "9-494. ������", "������"),
-                    LocationInfo("26-430", "26-430. ������", "������")
+                    LocationInfo("8-227", "8-227. Магазин", "Магазин"),
+                    LocationInfo("2-482", "2-482. Магазин", "Магазин"),
+                    LocationInfo("9-494", "9-494. Магазин", "Магазин"),
+                    LocationInfo("26-430", "26-430. Магазин", "Магазин")
                 )
             )
         )
         
-        // ������� ���������
+        // Ресурсы охотника
         groups.add(
             LocationGroup(
-                title = "������� ���������",
+                title = "Ресурсы охотника",
                 locations = getHunterResourceLocations()
             )
         )
@@ -322,7 +322,7 @@ class NavigatorViewModel @Inject constructor(
         val groups = if (filteredLocations.isNotEmpty()) {
             listOf(
                 LocationGroup(
-                    title = "���������� ��������",
+                    title = "Найденные локации",
                     locations = filteredLocations
                 )
             )
@@ -349,8 +349,8 @@ class NavigatorViewModel @Inject constructor(
     }
     
     private fun calculateRouteInfo(destination: String): RouteInfo {
-        // �������� ������� ��������
-        // � ���������� ����� ����� �������������� MapPath �� Windows ������
+        // Расчет маршрута
+        // в реальном проекте будет взято из MapPath в Windows
         val startLocation = currentProfile?.mapLocation ?: "8-259"
         
         return if (isValidCellNumber(destination)) {
@@ -370,116 +370,116 @@ class NavigatorViewModel @Inject constructor(
     }
     
     private fun getLocationTooltip(cellNumber: String): String {
-        // �������� - � ���������� ����� �������������� Map.Cells[cellNumber].Tooltip
+        // Расчет - из Map.Cells[cellNumber].Tooltip
         return when (cellNumber) {
-            "8-259", "8-294" -> "�������"
-            "8-197" -> "�������"
-            "12-428", "12-494", "12-521" -> "�����"
-            else -> "����������� �������"
+            "8-259", "8-294" -> "Столица"
+            "8-197" -> "Деревня"
+            "12-428", "12-494", "12-521" -> "Порт"
+            else -> "Неизвестная локация"
         }
     }
     
     private fun getLocationsByPattern(pattern: String): List<LocationInfo> {
-        // �������� - � ���������� ����� ����� � Map.Cells
+        // Расчет - из Map.Cells
         return when (pattern) {
-            "�����" -> listOf(
-                LocationInfo("8-300", "8-300. �����", "�����"),
-                LocationInfo("8-301", "8-301. �����", "�����")
+            "лес" -> listOf(
+                LocationInfo("8-300", "8-300. Лес", "Лес"),
+                LocationInfo("8-301", "8-301. Лес", "Лес")
             )
-            "����GA" -> listOf(
-                LocationInfo("8-400", "8-400. ����GA", "����GA"),
-                LocationInfo("8-401", "8-401. ����GA", "����GA")
+            "ШахтA" -> listOf(
+                LocationInfo("8-400", "8-400. ШахтаA", "ШахтаA"),
+                LocationInfo("8-401", "8-401. ШахтаA", "ШахтаA")
             )
-            "����GB" -> listOf(
-                LocationInfo("8-410", "8-410. ����GB", "����GB"),
-                LocationInfo("8-411", "8-411. ����GB", "����GB")
+            "ШахтB" -> listOf(
+                LocationInfo("8-410", "8-410. ШахтаB", "ШахтаB"),
+                LocationInfo("8-411", "8-411. ШахтаB", "ШахтаB")
             )
-            "����GC" -> listOf(
-                LocationInfo("8-420", "8-420. ����GC", "����GC"),
-                LocationInfo("8-421", "8-421. ����GC", "����GC")
+            "ШахтC" -> listOf(
+                LocationInfo("8-420", "8-420. ШахтаC", "ШахтаC"),
+                LocationInfo("8-421", "8-421. ШахтаC", "ШахтаC")
             )
-            "�����" -> listOf(
-                LocationInfo("8-500", "8-500. �����", "�����"),
-                LocationInfo("8-501", "8-501. ������ ������", "������ ������")
+            "пещера" -> listOf(
+                LocationInfo("8-500", "8-500. Пещера", "Пещера"),
+                LocationInfo("8-501", "8-501. Подземелье", "Подземелье")
             )
-            "������" -> listOf(
-                LocationInfo("8-600", "8-600. ������", "������"),
-                LocationInfo("8-601", "8-601. ������", "������")
+            "руда" -> listOf(
+                LocationInfo("8-600", "8-600. Руда", "Руда"),
+                LocationInfo("8-601", "8-601. Руда", "Руда")
             )
-            "���������" -> listOf(
-                LocationInfo("8-700", "8-700. ���������", "���������"),
-                LocationInfo("8-701", "8-701. ���������", "���������")
+            "подземелье" -> listOf(
+                LocationInfo("8-700", "8-700. Подземелье", "Подземелье"),
+                LocationInfo("8-701", "8-701. Подземелье", "Подземелье")
             )
             else -> emptyList()
         }
     }
     
     private fun getLocationsByTooltipPattern(pattern: String): List<LocationInfo> {
-        // �������� - � ���������� ����� ����� � Map.Cells �� Tooltip
+        // Расчет - из Map.Cells по Tooltip
         return listOf(
             LocationInfo("8-999", "8-999. $pattern", pattern)
         )
     }
     
     private fun getBotLocations(): List<LocationInfo> {
-        // �������� - � ���������� ����� �������� �� _bots ���������
+        // Расчет - из ботов в Map.Bots
         return listOf(
-            LocationInfo("8-800", "8-800. ������� (8-12)", "�������"),
-            LocationInfo("8-801", "8-801. ���� (15)", "����"),
-            LocationInfo("8-802", "8-802. ���� (19)", "����")
+            LocationInfo("8-800", "8-800. Бот (8-12)", "Бот"),
+            LocationInfo("8-801", "8-801. Бот (15)", "Бот"),
+            LocationInfo("8-802", "8-802. Бот (19)", "Бот")
         )
     }
     
     private fun getHerbLocations(): List<LocationInfo> {
-        // �������� - � ���������� ����� �������� �� _herbs ���������
+        // Расчет - из трав в Map.Herbs
         return listOf(
-            LocationInfo("8-850", "8-850. ����� (������� 1)", "�����"),
-            LocationInfo("8-851", "8-851. ����� (������� 2)", "�����")
+            LocationInfo("8-850", "8-850. Трава (Трава 1)", "Трава"),
+            LocationInfo("8-851", "8-851. Трава (Трава 2)", "Трава")
         )
     }
     
     private fun getFishingLocations(): List<LocationInfo> {
-        // �������� - � ���������� ����� ����� � Map.Cells �� HasFish
+        // Расчет - из Map.Cells по HasFish
         return listOf(
-            LocationInfo("8-900", "8-900. �����", "�����"),
-            LocationInfo("8-901", "8-901. ����", "����")
+            LocationInfo("8-900", "8-900. Рыба", "Рыба"),
+            LocationInfo("8-901", "8-901. Рыба", "Рыба")
         )
     }
     
     private fun getTeleportLocations(): List<LocationInfo> {
-        // �������� - � ���������� ����� �������� �� Map.Teleports
+        // Расчет - из Map.Teleports
         return listOf(
-            LocationInfo("8-950", "8-950. ��������", "��������"),
-            LocationInfo("8-951", "8-951. ��������", "��������")
+            LocationInfo("8-950", "8-950. Телепорт", "Телепорт"),
+            LocationInfo("8-951", "8-951. Телепорт", "Телепорт")
         )
     }
     
     private fun getHunterResourceLocations(): List<LocationInfo> {
-        // �������� - ������������� PopulateSkinRes �� Windows ������
+        // Расчет - PopulateSkinRes в Windows
         return listOf(
-            LocationInfo("8-200", "(5��) �������� ������ (0+)", "�����"),
-            LocationInfo("8-201", "(3��) �������� ���� (15+)", "�����"),
-            LocationInfo("8-202", "(4��) ���� ������ (50+)", "������"),
-            LocationInfo("8-203", "(3��) ����� ������ (65+)", "������"),
-            LocationInfo("8-204", "(2��) ���� ������ (80+)", "������"),
-            LocationInfo("8-205", "(2��) ������ (100+)", "������"),
-            LocationInfo("8-206", "(6��) ����� �������� (120+)", "�������"),
-            LocationInfo("8-207", "(4��) ������ (130+)", "�������"),
-            LocationInfo("8-208", "(3��) ���� (150+)", "�������"),
-            LocationInfo("8-209", "(5��) ������� �� (180+)", "�����"),
-            LocationInfo("8-210", "(4��) ������� ���� (200+)", "�����"),
-            LocationInfo("8-211", "(3��) ����� (220+)", "�����"),
-            LocationInfo("8-212", "(7��) ������ ���� (235+)", "�����"),
-            LocationInfo("8-213", "(5��) ��������� ������� (250+)", "�����"),
-            LocationInfo("8-214", "(6��) ������� (260+)", "�����"),
-            LocationInfo("8-215", "(4��) ����� (280+)", "�����"),
-            LocationInfo("8-216", "(3��) ������ ���� (300+)", "�����"),
-            LocationInfo("8-217", "(2��) �������� ������ (320+)", "�����"),
-            LocationInfo("8-218", "(2��) �������� ����� (350+)", "�����"),
-            LocationInfo("8-219", "(4��) �������� ���� (400+)", "�������"),
-            LocationInfo("8-220", "(3��) ����� �������� (500+)", "�������"),
-            LocationInfo("8-221", "(2��) �������� ��� (600+)", "�������"),
-            LocationInfo("8-222", "(1��) ����� (700+)", "�������")
+            LocationInfo("8-200", "(5 шт) Сокровище ресурсов (0+)", "Ресурс"),
+            LocationInfo("8-201", "(3 шт) Сокровище ресурсов (15+)", "Ресурс"),
+            LocationInfo("8-202", "(4 шт) Сокровище ресурсов (50+)", "Ресурс"),
+            LocationInfo("8-203", "(3 шт) Сокровище ресурсов (65+)", "Ресурс"),
+            LocationInfo("8-204", "(2 шт) Сокровище ресурсов (80+)", "Ресурс"),
+            LocationInfo("8-205", "(2 шт) Сокровище ресурсов (100+)", "Ресурс"),
+            LocationInfo("8-206", "(6 шт) Сокровище ресурсов (120+)", "Ресурс"),
+            LocationInfo("8-207", "(4 шт) Сокровище ресурсов (130+)", "Ресурс"),
+            LocationInfo("8-208", "(3 шт) Сокровище ресурсов (150+)", "Ресурс"),
+            LocationInfo("8-209", "(5 шт) Сокровище ресурсов (180+)", "Ресурс"),
+            LocationInfo("8-210", "(4 шт) Сокровище ресурсов (200+)", "Ресурс"),
+            LocationInfo("8-211", "(3 шт) Сокровище ресурсов (220+)", "Ресурс"),
+            LocationInfo("8-212", "(7 шт) Сокровище ресурсов (235+)", "Ресурс"),
+            LocationInfo("8-213", "(5 шт) Сокровище ресурсов (250+)", "Ресурс"),
+            LocationInfo("8-214", "(6 шт) Сокровище ресурсов (260+)", "Ресурс"),
+            LocationInfo("8-215", "(4 шт) Сокровище ресурсов (280+)", "Ресурс"),
+            LocationInfo("8-216", "(3 шт) Сокровище ресурсов (300+)", "Ресурс"),
+            LocationInfo("8-217", "(2 шт) Сокровище ресурсов (320+)", "Ресурс"),
+            LocationInfo("8-218", "(2 шт) Сокровище ресурсов (350+)", "Ресурс"),
+            LocationInfo("8-219", "(4 шт) Сокровище ресурсов (400+)", "Ресурс"),
+            LocationInfo("8-220", "(3 шт) Сокровище ресурсов (500+)", "Ресурс"),
+            LocationInfo("8-221", "(2 шт) Сокровище ресурсов (600+)", "Ресурс"),
+            LocationInfo("8-222", "(1 шт) Сокровище ресурсов (700+)", "Ресурс")
         )
     }
 }
