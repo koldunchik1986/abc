@@ -9,6 +9,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.koldunchik1986.ANL.data.model.UserProfile
+import java.net.URLEncoder
+import com.koldunchik1986.ANL.core.auth.AuthenticationHelper
 
 /**
  * WebViewClient для работы с игровым браузером
@@ -16,6 +18,7 @@ import com.koldunchik1986.ANL.data.model.UserProfile
  */
 class GameWebViewClient(
     private val currentProfile: UserProfile?,
+    private val authHelper: AuthenticationHelper = AuthenticationHelper(),
     private val onPageStarted: (String) -> Unit = {},
     private val onPageFinished: (String) -> Unit = {},
     private val onLoadingStateChanged: (Boolean) -> Unit = {},
@@ -135,6 +138,15 @@ class GameWebViewClient(
                         return 'ERROR:' + errorMatch[1];
                     }
                     
+                    // Дополнительная проверка на общие ошибки (Cookie, соединение и т.д.)
+                    if (pageText.indexOf('Cookie...') !== -1) {
+                        return 'ERROR:Проблема с cookies, перезагрузка страницы...';
+                    }
+                    
+                    if (pageText.indexOf('Connection error') !== -1) {
+                        return 'ERROR:Ошибка соединения с сервером';
+                    }
+                    
                     return true;
                 })();
             """.trimIndent()
@@ -166,30 +178,11 @@ class GameWebViewClient(
     private fun performAutoLogin(webView: WebView) {
         onAutoLoginStatus("Отправка данных входа...")
         
-        // Генерируем HTML с автоматической отправкой формы, как это делается в IndexCgi.cs
-        val autoLoginHtml = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Авторизация...</title>
-                <meta charset="UTF-8">
-            </head>
-            <body>
-                <div style="text-align: center; margin-top: 50px; font-family: Arial;">
-                    <h3>Вход в игру...</h3>
-                    <p>Выполняется автоматическая авторизация...</p>
-                </div>
-                <form action="./game.php" method="POST" name="ff">
-                    <input name="player_nick" type="hidden" value="${currentProfile?.userNick ?: ""}">
-                    <input name="player_password" type="hidden" value="${currentProfile?.userPassword ?: ""}">
-                </form>
-                <script language="JavaScript">
-                    console.log('Auto-submitting login form...');
-                    document.ff.submit();
-                </script>
-            </body>
-            </html>
-        """.trimIndent()
+        val userNick = currentProfile?.userNick ?: ""
+        val userPassword = currentProfile?.userPassword ?: ""
+        
+        // Используем AuthenticationHelper для создания HTML формы
+        val autoLoginHtml = authHelper.createAutoLoginHtml(userNick, userPassword)
         
         // Загружаем HTML с автоматической отправкой формы
         webView.loadDataWithBaseURL(
@@ -287,8 +280,8 @@ class GameWebViewClient(
                     <p>Выполняется отправка пароля для Flash игры...</p>
                 </div>
                 <form action="./game.php" method="POST" name="ff">
-                    <input name="flcheck" type="hidden" value="${currentProfile?.userPasswordFlash ?: ""}">
-                    <input name="nid" type="hidden" value="$playerId">
+                    <input name="flcheck" type="hidden" value="${URLEncoder.encode(currentProfile?.userPasswordFlash ?: "", "windows-1251")}">
+                    <input name="nid" type="hidden" value="${URLEncoder.encode(playerId, "windows-1251")}">
                 </form>
                 <script language="JavaScript">
                     console.log('Auto-submitting Flash password form...');

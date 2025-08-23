@@ -67,12 +67,13 @@ class GameCookieManager @Inject constructor(
     private fun handleNeverNickCookie(cookie: Cookie) {
         try {
             val encodedNick = cookie.value
+            // Декодируем как это делается в Windows версии (windows-1251)
             val decodedNick = URLDecoder.decode(encodedNick, "windows-1251")
             
-            // Проверяем соответствие с текущим пользователем
+            // Проверяем соответствие с текущим пользователем (аналог CookiesManager.cs)
             val currentUserNick = preferencesManager.getCurrentUserNick()
             if (currentUserNick != null && !decodedNick.equals(currentUserNick, ignoreCase = true)) {
-                throw SecurityException("Несоответствие имени пользователя.")
+                throw SecurityException("Неверное имя или пароль.")
             }
             
             // Сохраняем имя пользователя
@@ -80,6 +81,10 @@ class GameCookieManager @Inject constructor(
             
         } catch (e: Exception) {
             e.printStackTrace()
+            // Критическая ошибка аутентификации
+            if (e is SecurityException) {
+                throw e
+            }
         }
     }
     
