@@ -26,6 +26,19 @@ class HtmlFilters @Inject constructor(
     }
     
     /**
+     * Получение HTML заголовка
+     */
+    fun getHtmlHead(): String {
+        return """<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
+    <title>Neverlands</title>
+</head>
+<body>"""
+    }
+    
+    /**
      * Получение текущего профиля пользователя
      */
     private fun getCurrentProfile(): UserProfile? {
