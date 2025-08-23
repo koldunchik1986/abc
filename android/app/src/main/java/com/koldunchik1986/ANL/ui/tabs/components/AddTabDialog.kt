@@ -143,7 +143,7 @@ private fun AddTabDialogContent(
                 if (selectedTabType == TabType.CUSTOM || 
                     selectedTabType == TabType.FORUM) {
                     
-                    Divider(modifier = Modifier.padding(vertical = 8.dp))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                     
                     OutlinedTextField(
                         value = customTitle,

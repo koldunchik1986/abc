@@ -10,6 +10,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -245,7 +246,7 @@ private fun getTabIcon(tabType: TabType): ImageVector {
         TabType.FORUM -> Icons.Default.Forum
         TabType.PINFO -> Icons.Default.Person
         TabType.FIGHT_LOG -> Icons.Default.History
-        TabType.CHAT -> Icons.Default.Chat
+        TabType.CHAT -> Icons.AutoMirrored.Filled.Chat
         TabType.TODAY_CHAT -> Icons.Default.ChatBubble
         TabType.NOTEPAD -> Icons.Default.Edit
         TabType.CUSTOM -> Icons.Default.Language

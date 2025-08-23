@@ -72,7 +72,7 @@ android {
     applicationVariants.all {
         outputs.all {
             val outputImpl = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
-            val appName = "3GC"
+            val appName = "ANL"
             val versionName = defaultConfig.versionName
             outputImpl.outputFileName = "${appName}_v${versionName}.apk"
         }

@@ -2,6 +2,7 @@ package com.koldunchik1986.ANL.ui.settings.sections
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,7 +28,7 @@ fun SoundSettingsSection(
 ) {
     SettingsSection(
         title = "Настройки звука",
-        icon = { Icon(Icons.Default.VolumeUp, contentDescription = null) }
+        icon = { Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null) }
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),

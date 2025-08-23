@@ -8,7 +8,10 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -100,7 +103,7 @@ fun ProfilesScreen(
                 title = { Text("Управление профилями") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
                     }
                 },
                 actions = {
@@ -193,7 +196,31 @@ private fun ProfileEditScreen(
                 title = { Text("Редактирование профиля") },
                 navigationIcon = {
                     IconButton(onClick = onCancel) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            val updatedProfile = profile.copy(
+                                userNick = nick,
+                                userPassword = password,
+                                userPasswordFlash = flashPassword,
+                                userAutoLogon = autoLogon,
+                                useProxy = useProxy,
+                                proxyAddress = proxyAddress,
+                                proxyUserName = proxyUsername,
+                                proxyPassword = proxyPassword
+                            )
+                            onSave(updatedProfile)
+                        },
+                        enabled = formValid
+                    ) {
+                        Icon(
+                            Icons.Default.Check, 
+                            contentDescription = "Сохранить",
+                            tint = if (formValid) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             )
@@ -203,7 +230,8 @@ private fun ProfileEditScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             OutlinedTextField(
@@ -432,43 +460,6 @@ private fun ProfileEditScreen(
                             modifier = Modifier.weight(1f)
                         )
                     }
-                }
-            }
-            
-            Spacer(modifier = Modifier.weight(1f))
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedButton(
-                    onClick = onCancel,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Отмена")
-                }
-                
-                Button(
-                    onClick = {
-                        val updatedProfile = profile.copy(
-                            userNick = nick,
-                            userPassword = password,
-                            userPasswordFlash = flashPassword,
-                            userAutoLogon = autoLogon,
-                            useProxy = useProxy,
-                            proxyAddress = proxyAddress,
-                            proxyUserName = proxyUsername,
-                            proxyPassword = proxyPassword
-                        )
-                        onSave(updatedProfile)
-                    },
-                    enabled = formValid,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        if (nickAndPasswordPresented) "Сохранить" 
-                        else "Вход в игру"
-                    )
                 }
             }
         }

@@ -2,6 +2,7 @@ package com.koldunchik1986.ANL.ui.settings.sections
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -79,7 +80,7 @@ fun ChatSettingsSection(
 ) {
     SettingsSection(
         title = "Настройки чата",
-        icon = { Icon(Icons.Default.Chat, contentDescription = null) }
+        icon = { Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null) }
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -241,7 +242,7 @@ fun MapSettingsSection(
             Text("Рисовать регионы")
         }
         
-        Divider()
+        HorizontalDivider()
         
         Text("Мини-карта", style = MaterialTheme.typography.titleSmall)
         
