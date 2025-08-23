@@ -205,15 +205,6 @@ class SessionKeepAliveManager @Inject constructor(
 }
 
 /**
- * Состояние сессии
- */
-enum class SessionState {
-    INACTIVE,   // Сессия не активна
-    ACTIVE,     // Сессия активна и поддерживается
-    ERROR       // Ошибка поддержания сессии
-}
-
-/**
  * Статистика сессии
  */
 data class SessionStatistics(

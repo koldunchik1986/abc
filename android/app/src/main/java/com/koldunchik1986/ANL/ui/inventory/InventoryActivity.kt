@@ -1,6 +1,11 @@
 package com.koldunchik1986.ANL.ui.inventory
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,11 +15,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
+import com.koldunchik1986.ANL.R
 import com.koldunchik1986.ANL.data.model.InventoryItem
+import com.koldunchik1986.ANL.ui.theme.ABClientTheme
+import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * Экран инвентаря - аналог структуры InvEntry из Windows клиента
@@ -431,93 +446,85 @@ private fun DetailedItemView(
         Spacer(modifier = Modifier.height(16.dp))
         
         // Действия с предметом
-        LazyColumn {
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    if (item.canWear) {
-                        Button(
-                            onClick = onWear,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Надеть")
-                        }
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (item.canWear) {
+                    Button(
+                        onClick = onWear,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Надеть")
                     }
-                    
-                    if (item.canUse) {
-                        Button(
-                            onClick = onUse,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Использовать")
-                        }
+                }
+                
+                if (item.canUse) {
+                    Button(
+                        onClick = onUse,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Использовать")
                     }
                 }
             }
             
-            item {
-                Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (item.canSell) {
+                    OutlinedButton(
+                        onClick = onSell,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.AttachMoney, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Продать за ${item.sellPrice} NV")
+                    }
+                }
                 
+                OutlinedButton(
+                    onClick = onDrop,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Удалить")
+                }
+            }
+            
+            // Действия с несколькими предметами
+            if (item.count > 1) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     if (item.canSell) {
                         OutlinedButton(
-                            onClick = onSell,
+                            onClick = onBulkSell,
                             modifier = Modifier.weight(1f)
                         ) {
                             Icon(Icons.Default.AttachMoney, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Продать за ${item.sellPrice} NV")
+                            Text("Продать все за ${item.sellPrice * item.count} NV")
                         }
                     }
                     
                     OutlinedButton(
-                        onClick = onDrop,
+                        onClick = onBulkDrop,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.DeleteSweep, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Удалить")
-                    }
-                }
-            }
-            
-            // Действия с несколькими предметами
-            if (item.count > 1) {
-                item {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        if (item.canSell) {
-                            OutlinedButton(
-                                onClick = onBulkSell,
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Icon(Icons.Default.AttachMoney, contentDescription = null, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Продать все за ${item.sellPrice * item.count} NV")
-                            }
-                        }
-                        
-                        OutlinedButton(
-                            onClick = onBulkDrop,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(Icons.Default.DeleteSweep, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Удалить все")
-                        }
+                        Text("Удалить все")
                     }
                 }
             }

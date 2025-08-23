@@ -1,38 +1,43 @@
-// Gradle init script to disable JDK image transformation for GraalVM compatibility
+// init-disable-jdk-image.gradle
+// Скрипт для полного отключения JDK image transformation
+
 allprojects {
-    afterEvaluate { project ->
-        if (project.plugins.hasPlugin('com.android.application') || 
-            project.plugins.hasPlugin('com.android.library')) {
-            
-            // Force disable Android JDK image features
-            project.android {
-                compileOptions {
-                    sourceCompatibility = JavaVersion.VERSION_11
-                    targetCompatibility = JavaVersion.VERSION_11
-                }
-            }
-            
-            // Disable JDK image transformation in configurations
-            project.configurations.all { config ->
-                config.resolutionStrategy.eachDependency { details ->
-                    // Skip JDK image related transformations
-                    if (details.requested.name.contains('core-for-system-modules')) {
-                        details.because('Avoiding GraalVM jlink compatibility issues')
-                    }
+    configurations.all {
+        resolutionStrategy {
+            eachDependency {
+                // Блокируем любые попытки использования JDK image
+                if (requested.name.contains("core-for-system-modules")) {
+                    useTarget("${requested.group}:${requested.name}:${requested.version}")
+                    because("Полное отключение JDK image transformation")
                 }
             }
         }
     }
-}
-
-// Disable JDK image related tasks globally
-gradle.taskGraph.whenReady { taskGraph ->
-    taskGraph.allTasks.each { task ->
-        if (task.name.contains('JdkImage') || 
-            task.name.contains('jdkImage') ||
-            task.class.name.contains('JdkImageTransform')) {
-            task.enabled = false
-            println "Disabled task ${task.name} for GraalVM compatibility"
+    
+    // Отключаем все возможные варианты JDK image transformation
+    if (project.extensions.findByName("android") != null) {
+        android {
+            compileOptions {
+                isCoreLibraryDesugaringEnabled = false
+            }
+        }
+    }
+    
+    // Дополнительные настройки для отключения JDK image
+    gradle.projectsEvaluated {
+        if (project.extensions.findByName("android") != null) {
+            android {
+                configurations.all {
+                    resolutionStrategy {
+                        eachDependency {
+                            if (requested.name.contains("core-for-system-modules")) {
+                                useTarget("${requested.group}:${requested.name}:${requested.version}")
+                                because("Дополнительное отключение JDK image transformation")
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

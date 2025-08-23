@@ -58,7 +58,8 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro", "r8-rules.pro")
-            signingConfig = signingConfigs.getByName("release")
+            // Используем debug signing config для тестирования
+            signingConfig = signingConfigs.getByName("debug")
             
             // R8 оптимизации
             isDebuggable = false
@@ -71,7 +72,7 @@ android {
     applicationVariants.all {
         outputs.all {
             val outputImpl = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
-            val appName = "ANL"
+            val appName = "3GC"
             val versionName = defaultConfig.versionName
             outputImpl.outputFileName = "${appName}_v${versionName}.apk"
         }

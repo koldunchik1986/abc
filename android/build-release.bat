@@ -1,6 +1,6 @@
 @echo off
-REM Set JAVA_HOME to GraalVM to avoid JDK image transformation issues
-set JAVA_HOME=C:\Program Files\graalvm-jdk-21
+REM Set JAVA_HOME to Oracle JDK 17 to avoid JDK image transformation issues
+set JAVA_HOME=C:\Program Files\java\jdk-17
 set PATH=C:\Program Files\java\jdk-17\bin;%PATH%
 
 REM Disable Android JDK image features completely
@@ -15,7 +15,7 @@ set GRADLE_OPTS=%GRADLE_OPTS% -Dorg.gradle.java.installations.auto-download=fals
 set GRADLE_OPTS=%GRADLE_OPTS% -Dorg.gradle.configuration-cache=false
 set GRADLE_OPTS=%GRADLE_OPTS% -Dorg.gradle.jvmargs="-Xmx8192m -XX:MaxMetaspaceSize=1024m -Djdk.lang.Process.launchMechanism=vfork"
 
-echo Сборка ABClient Release с GraalVM JDK 21
+echo Сборка ABClient Release с Oracle JDK 17
 echo JAVA_HOME: %JAVA_HOME%
 echo GRADLE_OPTS: %GRADLE_OPTS%
 

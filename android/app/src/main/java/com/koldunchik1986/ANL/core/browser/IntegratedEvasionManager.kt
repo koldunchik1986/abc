@@ -105,7 +105,9 @@ class IntegratedEvasionManager @Inject constructor(
             RiskLevel.HIGH -> {
                 // Высокий риск - меняем идентичность и применяем максимальную защиту
                 val newIdentity = identityRotation.rotateIdentity()
-                val bypasses = antiDetection.applyBypasses(detectionResult)
+                val bypassResults = antiDetection.applyBypasses(detectionResult)
+                // Преобразуем BypassResult в String
+                val bypasses = bypassResults.map { it.toString() }
                 
                 webView?.let { setupProtectedWebView(it) }
                 
@@ -120,7 +122,9 @@ class IntegratedEvasionManager @Inject constructor(
             
             RiskLevel.MEDIUM -> {
                 // Средний риск - применяем целевые обходы
-                val bypasses = antiDetection.applyBypasses(detectionResult)
+                val bypassResults = antiDetection.applyBypasses(detectionResult)
+                // Преобразуем BypassResult в String
+                val bypasses = bypassResults.map { it.toString() }
                 
                 ProtectionResult(
                     level = ProtectionLevel.ENHANCED,
